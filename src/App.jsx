@@ -28,6 +28,7 @@ import {
 } from 'lucide-react'
 
 const HumanoidLab = React.lazy(() => import('./HumanoidLab.jsx'))
+const assetUrl = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`
 
 class TwinErrorBoundary extends React.Component {
   constructor(props) {
@@ -261,7 +262,7 @@ const buildEvidence = [
     stage: 'PARTS',
     title: '部件成组准备',
     copy: '结构件、轴承与紧固位按批次整理，装配从可核对的实物开始。',
-    asset: '/media/project-evidence/build-parts',
+    asset: 'media/project-evidence/build-parts',
     alt: '工作台上成组摆放的白色关节结构件与轴承组件',
     position: '50% 35%',
   },
@@ -270,7 +271,7 @@ const buildEvidence = [
     stage: 'NODE ARRAY',
     title: '关节节点接线',
     copy: '多组电机、控制板与传感接口进入工作台接线和逐节点检查。',
-    asset: '/media/project-evidence/build-nodes',
+    asset: 'media/project-evidence/build-nodes',
     alt: '工作台上的多组电机、控制板、传感接口与接线工具',
     position: '50% 55%',
   },
@@ -279,17 +280,17 @@ const buildEvidence = [
     stage: 'SUBSYSTEM',
     title: '肢体子系统集成',
     copy: '关节模块、线束和夹爪组合为可独立检查的手臂子系统。',
-    asset: '/media/project-evidence/build-limb',
+    asset: 'media/project-evidence/build-limb',
     alt: '工作台上完成机械装配与接线的人形机器人手臂和夹爪',
     position: '50% 48%',
   },
 ]
 
 const morphologies = [
-  { id: 'biped', label: '双足', code: '01', copy: '论文实机形态', status: 'REAL HARDWARE', verified: true, asset: '/media/morph-biped.png' },
-  { id: 'quadruped', label: '四足', code: '02', copy: '论文可重构示例', status: 'PAPER CONCEPT', verified: false, asset: '/media/morph-quadruped.png' },
-  { id: 'centaur', label: '半人马式', code: '03', copy: '论文可重构示例', status: 'PAPER CONCEPT', verified: false, asset: '/media/morph-centaur.png' },
-  { id: 'mobile', label: '轮式底盘', code: '04', copy: '论文可重构示例', status: 'PAPER CONCEPT', verified: false, asset: '/media/morph-mobile.png' },
+  { id: 'biped', label: '双足', code: '01', copy: '论文实机形态', status: 'REAL HARDWARE', verified: true, asset: 'media/morph-biped.png' },
+  { id: 'quadruped', label: '四足', code: '02', copy: '论文可重构示例', status: 'PAPER CONCEPT', verified: false, asset: 'media/morph-quadruped.png' },
+  { id: 'centaur', label: '半人马式', code: '03', copy: '论文可重构示例', status: 'PAPER CONCEPT', verified: false, asset: 'media/morph-centaur.png' },
+  { id: 'mobile', label: '轮式底盘', code: '04', copy: '论文可重构示例', status: 'PAPER CONCEPT', verified: false, asset: 'media/morph-mobile.png' },
 ]
 
 const iotLayers = [
@@ -304,7 +305,7 @@ const iotLayers = [
     copy: '执行器磁编码器与相电流采样提供关节反馈，机身 IMU 独立提供姿态与运动状态；两条感知支路在机载端汇聚。',
     tags: ['JOINT ENCODER', 'PHASE CURRENT', 'IMU / USB'],
     payload: ['关节位置', '相电流', '机身姿态'],
-    photo: '/media/project-evidence/physical-device',
+    photo: 'media/project-evidence/physical-device',
     photoLabel: 'DEVICE / INTERFACE BOARDS',
     photoTitle: '板卡节点成组准备',
     photoCopy: '控制板与接口小板的实物记录，对应系统的设备与感知入口。',
@@ -322,7 +323,7 @@ const iotLayers = [
     copy: 'STM32G431 电机控制器在关节侧完成 FOC、电机配置、编码器读取与状态回传；CAN ID 让每个节点在整机中可被识别。',
     tags: ['STM32G431', 'FOC', 'CAN ID'],
     payload: ['电机配置', '关节状态', '节点标识'],
-    photo: '/media/project-evidence/physical-actuator',
+    photo: 'media/project-evidence/physical-actuator',
     photoLabel: 'CONTROL / JOINT NODE',
     photoTitle: '控制进入单个关节',
     photoCopy: '电机、结构件、传感接口与线束汇成可独立装配的执行节点。',
@@ -340,7 +341,7 @@ const iotLayers = [
     copy: '四条独立 CAN 2.0 总线通过 USB-CAN 接入机载电脑，以分段网络平衡带宽、布线和故障隔离。',
     tags: ['CAN 2.0', '1 MBPS / BUS', 'USB-CAN'],
     payload: ['状态帧', '配置帧', '总线分段'],
-    photo: '/media/project-evidence/physical-network',
+    photo: 'media/project-evidence/physical-network',
     photoLabel: 'NETWORK / MULTI-NODE BENCH',
     photoTitle: '多节点进入同一链路',
     photoCopy: '多组电机、控制板与线束并列，直观看见分布式节点的接线规模。',
@@ -358,7 +359,7 @@ const iotLayers = [
     copy: '机载 x86 计算机汇聚 CAN 关节反馈与 USB IMU 状态，完成低层控制和策略推理；关键运动闭环不依赖远端云端。',
     tags: ['250 HZ I/O · PAPER', '25 HZ POLICY · PAPER', 'ON-ROBOT'],
     payload: ['反馈汇聚', '策略推理', '运动接口'],
-    photo: '/media/project-evidence/physical-system',
+    photo: 'media/project-evidence/physical-system',
     photoLabel: 'EDGE / ON-ROBOT INTEGRATION',
     photoTitle: '计算与线束汇入机身',
     photoCopy: '整机实物记录呈现机身载荷、分布式关节与线束的物理汇聚。',
@@ -376,7 +377,7 @@ const iotLayers = [
     copy: '本展示层读取官方 URDF 关节树与 26 个 STL 网格，通过 Three.js 解释结构、动作和数据链路；它是原理可视化，不冒充实时遥测。',
     tags: ['OFFICIAL ASSETS', 'THREE.JS', 'EXPLAINER'],
     payload: ['结构导览', '动作演示', '来源追溯'],
-    photo: '/media/project-evidence/physical-mapping',
+    photo: 'media/project-evidence/physical-mapping',
     photoLabel: 'PHYSICAL OBJECT / DIGITAL MAPPING',
     photoTitle: '实物对象成为数字入口',
     photoCopy: '整机铺开后的结构关系，为数字模型、部件定位与服务记录提供对象基础。',
@@ -530,7 +531,7 @@ function HeroRobot() {
       <div className="hero-robot__orbit hero-robot__orbit--one" />
       <div className="hero-robot__orbit hero-robot__orbit--two" />
       <div className="hero-robot__measure hero-robot__measure--height"><span>0.80 M</span></div>
-      <img src="/media/bhl-robot-cutout.png" alt="Berkeley Humanoid Lite 实机正面" />
+      <img src={assetUrl('media/bhl-robot-cutout.png')} alt="Berkeley Humanoid Lite 实机正面" />
       <div className="robot-callout robot-callout--shoulder">
         <i />
         <div><span>FIELD BUS</span><strong>4 × CAN 2.0</strong></div>
@@ -575,8 +576,8 @@ function VideoFeature() {
     <article className="walk-film" data-reveal>
       <video
         ref={videoRef}
-        src="/media/bhl-walk.mp4"
-        poster="/media/locomotion.png"
+        src={assetUrl('media/bhl-walk.mp4')}
+        poster={assetUrl('media/locomotion.png')}
         muted
         loop
         playsInline
@@ -683,7 +684,7 @@ function MorphologyFigure({ morphology }) {
   return (
     <figure className={`morph-atlas is-${morphology.id}`} key={morphology.id}>
       <img
-        src={morphology.asset}
+        src={assetUrl(morphology.asset)}
         alt={`论文中的 Berkeley Humanoid Lite ${morphology.label}构型`}
       />
       <span className="morph-atlas__focus" aria-hidden="true"><i /><i /><i /><i /></span>
@@ -772,8 +773,8 @@ function IoTArchitecture({ activeIndex, setActiveIndex }) {
           key={activeLayer.id}
         >
           <img
-            src={`${activeLayer.photo}-1280.webp`}
-            srcSet={`${activeLayer.photo}-720.webp 720w, ${activeLayer.photo}-1280.webp 1280w`}
+            src={assetUrl(`${activeLayer.photo}-1280.webp`)}
+            srcSet={`${assetUrl(`${activeLayer.photo}-720.webp`)} 720w, ${assetUrl(`${activeLayer.photo}-1280.webp`)} 1280w`}
             sizes="(max-width: 720px) 100vw, (max-width: 1180px) 50vw, 38vw"
             alt={activeLayer.photoAlt}
             loading="lazy"
@@ -1052,7 +1053,7 @@ function SmartServiceConsole({ showcaseMode = false }) {
         <section className="service-body-stage" aria-label="机器人健康状态示意">
           <div className="service-body-stage__grid" />
           <div className="service-body-stage__head"><span>ASSET / HUMANOID-01</span><small>{scenario.target}</small></div>
-          <img src="/media/bhl-robot-cutout.png" alt="人形机器人健康监测示意" />
+          <img src={assetUrl('media/bhl-robot-cutout.png')} alt="人形机器人健康监测示意" />
           <span className="service-hotspot" aria-hidden="true"><i /><b /></span>
           <div className="service-health" style={{ '--health': displayHealth ?? 0 }}>
             <div><strong>{displayHealth ?? '--'}</strong><span>/ 100</span></div>
@@ -1619,7 +1620,7 @@ function App() {
                     '--focus-zoom': anatomyParts[activePart].focusZoom,
                   }}
                 >
-                  <img src="/media/system-components.png" alt="Berkeley Humanoid Lite 系统组件与尺寸示意图" />
+                  <img src={assetUrl('media/system-components.png')} alt="Berkeley Humanoid Lite 系统组件与尺寸示意图" />
                   <div className="anatomy-stage__scan" />
                   {anatomyParts.map((part, index) => (
                     <span
@@ -1674,7 +1675,7 @@ function App() {
               <a className="inline-link" href={LINKS.actuator} target="_blank" rel="noreferrer">查看执行器构建文档 <ArrowRight size={15} /></a>
             </div>
             <figure className="actuator-media" data-reveal>
-              <img src="/media/bhl-actuator-core-official.jpg" alt="官方构建文档中的 5010 无刷电机开盖实物" />
+              <img src={assetUrl('media/bhl-actuator-core-official.jpg')} alt="官方构建文档中的 5010 无刷电机开盖实物" />
               <div className="actuator-media__shade" />
               <div className="actuator-media__head"><span>OFFICIAL HARDWARE / 5010</span><small>PREPARING THE MOTOR</small></div>
               <figcaption>
@@ -1810,8 +1811,8 @@ function App() {
                 {buildEvidence.map((item) => (
                   <figure className={`build-evidence__card is-stage-${item.code}`} style={{ '--build-photo-position': item.position }} key={item.code}>
                     <img
-                      src={`${item.asset}-1280.webp`}
-                      srcSet={`${item.asset}-720.webp 720w, ${item.asset}-1280.webp 1280w`}
+                      src={assetUrl(`${item.asset}-1280.webp`)}
+                      srcSet={`${assetUrl(`${item.asset}-720.webp`)} 720w, ${assetUrl(`${item.asset}-1280.webp`)} 1280w`}
                       sizes="(max-width: 720px) 82vw, 31vw"
                       alt={item.alt}
                       loading="lazy"
@@ -1865,7 +1866,7 @@ function App() {
           </div>
         </section>
 
-        <section className="source-section" id="source">
+        <section className="source-section" id="source" style={{ '--source-bg': `url(${assetUrl('media/teleoperation.png')})` }}>
           <div className="page-frame source-layout">
             <div className="source-copy" data-reveal>
               <span className="section-kicker"><i /> 09 / SOURCE OF TRUTH</span>

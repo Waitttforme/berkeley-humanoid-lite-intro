@@ -1671,7 +1671,7 @@ button.text-action {
 }
 
 .operation-tile__image {
-  background-image: url('/media/teleoperation.png');
+  background-image: var(--source-bg);
   background-repeat: no-repeat;
   background-size: 400% auto;
   filter: saturate(0.56) contrast(1.05) brightness(0.72);
