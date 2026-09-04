@@ -1,0 +1,23 @@
+{
+  "name": "berkeley-humanoid-lite-intro",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "qa:visual": "node scripts/visual-qa.mjs"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "three": "^0.179.1",
+    "urdf-loader": "^0.12.7"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.62.1",
+    "vite": "^6.0.5"
+  }
+}
