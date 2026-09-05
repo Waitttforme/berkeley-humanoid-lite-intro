@@ -80,6 +80,7 @@ try {
   }
   console.log('Actual rendered fonts:', JSON.stringify(fontUsage, null, 2))
   assert.equal(await page.evaluate(() => document.fonts.status), 'loaded')
+  assert.deepEqual(await page.locator('.competition h1,.competition h2,.competition h3').allTextContents().then(titles => titles.filter(t => /[。！？]$/.test(t.trim()))), [], 'display headings omit sentence punctuation')
   passed.push('font loading complete; CDP confirms actual rendered font glyphs')
   for (const width of [320, 390, 768, 1024, 1440]) await inspectLayout(width)
   const reduced = await page.evaluate(() => ({
@@ -117,6 +118,12 @@ try {
   await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.goto(base, { waitUntil: 'networkidle' })
   await page.waitForTimeout(1500)
+  await page.locator('.product-film').scrollIntoViewIfNeeded()
+  await page.waitForFunction(() => parseFloat(getComputedStyle(document.querySelector('.product-film')).getPropertyValue('--film-scale')) >= .94)
+  await page.locator('.architecture button').first().click()
+  await page.waitForFunction(() => document.querySelector('.architecture-detail h3')?.textContent === '感知与执行')
+  assert.ok(await page.locator('.architecture button').first().evaluate(el => getComputedStyle(el,'::after').transform !== 'none'))
+  passed.push('scroll film scale and architecture detail transition update')
   const hero = page.locator('.hero-visual')
   await hero.scrollIntoViewIfNeeded()
   const box = await hero.boundingBox()

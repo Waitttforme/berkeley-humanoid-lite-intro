@@ -1,5 +1,11 @@
 # Exhibition design revision
 
+## Robotics typography and motion follow-up
+
+Inspected https://www.figure.ai/ and https://www.unitree.com/ in a 1440px desktop browser. Figure rendered its visible editorial headings in PP Neue Machina Plain at 28px/400 with normal letter spacing, supported by muted video elements. Unitree's inspected Chinese headings used medium weights with normal letter spacing and system/PingFang fallbacks. Boston Dynamics returned an access-verification page and was excluded from design conclusions. No proprietary font assets were copied.
+
+Applied: display headings use short phrases without sentence-final punctuation; Chinese display weight is 480–500 with near-natural spacing. Headline reveal, scroll-driven film expansion and keyed architecture/application transitions provide distinct interaction cues. The film scales only within 0.94–1.0, scroll remains native, phone scaling is disabled and reduced-motion preferences suppress animation. Full paragraphs retain normal punctuation.
+
 Reviewed live official pages on 2026-09-05 at a 1440px browser viewport:
 
 - Apple iPhone: https://www.apple.com/iphone/ — visible main title used 80px/600; major chapter titles 56px/600; supporting feature headings 17px. The useful pattern is distinct display/body hierarchy and product-led sections.

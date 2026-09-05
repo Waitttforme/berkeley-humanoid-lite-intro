@@ -25,5 +25,9 @@
 @keyframes warning-breath{0%,100%{opacity:.2}50%{opacity:.8}}
 @keyframes signal-transfer{0%{opacity:0;transform:translateX(-28px)}25%{opacity:.75}75%{opacity:.5}100%{opacity:0;transform:translateX(4px)}}
 @keyframes panel-enter{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.architecture-detail,.case-detail{animation:detail-enter .5s cubic-bezier(.16,1,.3,1) both}
+@keyframes detail-enter{from{opacity:.2;transform:translateY(9px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:no-preference){.hero-copy h1 .headline-line{animation:headline-unmask 1s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--line-index,0)*150ms)}.hero-robot{animation:robot-enter 1.4s .12s cubic-bezier(.16,1,.3,1) both}}
+@keyframes headline-unmask{from{opacity:0;clip-path:inset(0 0 100% 0);transform:translateY(16px)}to{opacity:1;clip-path:inset(0 0 -8% 0);transform:none}}
 @media(max-width:650px){.hero-copy h1 .headline-line{letter-spacing:-.025em}.service-steps>div:after{display:none}}
 @media(prefers-reduced-motion:reduce){.competition *,.competition *:before,.competition *:after{animation:none!important;transition:none!important}.reveal-pending{opacity:1;transform:none}.hero-robot{translate:0 0!important}.hero-visual:before{opacity:.55}.service-steps>div:after{display:none}}

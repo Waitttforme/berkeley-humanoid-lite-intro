@@ -11,6 +11,18 @@ export default function useExhibitionMotion() {
     let frame = 0
     let x = 0
     let y = 0
+    let scrollFrame = 0
+    const film = root.querySelector('.product-film')
+    const updateScroll = () => {
+      scrollFrame = 0
+      if (!film || reduced.matches || document.hidden) return
+      const bounds = film.getBoundingClientRect()
+      if (bounds.bottom < 0 || bounds.top > innerHeight) return
+      const progress = Math.max(0, Math.min(1, (innerHeight - bounds.top) / (innerHeight * .85)))
+      film.style.setProperty('--film-scale', String(.94 + progress * .06))
+      film.style.setProperty('--film-progress', `${progress * 100}%`)
+    }
+    const scheduleScroll = () => { if (!scrollFrame && !reduced.matches && !document.hidden) scrollFrame = requestAnimationFrame(updateScroll) }
     const reset = () => { cancelAnimationFrame(frame); frame = 0; hero?.style.setProperty('--pointer-x', '0px'); hero?.style.setProperty('--pointer-y', '0px') }
     const move = e => {
       if (!hero || reduced.matches || !fine.matches) return
@@ -23,6 +35,10 @@ export default function useExhibitionMotion() {
     let revealObserver
     const configure = () => {
       reset()
+      cancelAnimationFrame(scrollFrame); scrollFrame = 0
+      film?.style.setProperty('--film-scale', '1')
+      film?.style.setProperty('--film-progress', '100%')
+      scheduleScroll()
       revealObserver?.disconnect()
       reveals.forEach(el => el.classList.remove('reveal-pending'))
       if (reduced.matches) return
@@ -39,7 +55,9 @@ export default function useExhibitionMotion() {
     fine.addEventListener('change', reset)
     document.addEventListener('visibilitychange', visibility)
     root.addEventListener('focusin', focusReveal)
+    window.addEventListener('scroll', scheduleScroll, { passive: true })
+    window.addEventListener('resize', scheduleScroll, { passive: true })
     configure(); visibility()
-    return () => { reset(); revealObserver?.disconnect(); motionObserver.disconnect(); hero?.removeEventListener('pointermove', move); hero?.removeEventListener('pointerleave', reset); reduced.removeEventListener('change', configure); fine.removeEventListener('change', reset); document.removeEventListener('visibilitychange', visibility); root.removeEventListener('focusin', focusReveal) }
+    return () => { reset(); cancelAnimationFrame(scrollFrame); window.removeEventListener('scroll', scheduleScroll); window.removeEventListener('resize', scheduleScroll); revealObserver?.disconnect(); motionObserver.disconnect(); hero?.removeEventListener('pointermove', move); hero?.removeEventListener('pointerleave', reset); reduced.removeEventListener('change', configure); fine.removeEventListener('change', reset); document.removeEventListener('visibilitychange', visibility); root.removeEventListener('focusin', focusReveal) }
   }, [])
 }

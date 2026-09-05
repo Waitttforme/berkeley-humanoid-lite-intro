@@ -469,7 +469,7 @@ select { font-size: 13px; background: #1d242d; border-color: #ffffff24; border-r
 .hero-layout { min-height: 730px; grid-template-columns: 1.18fr 1fr; align-items: center; }
 .hero-copy { padding-block: 45px 55px; }
 .hero-copy>.eyebrow { display: none; }
-.hero-copy h1 { font-size: clamp(52px,5.6vw,84px); font-weight: 600; line-height: 1.18; letter-spacing: -.035em; margin: 0 0 32px; }
+ .hero-copy h1 { font-size: clamp(52px,5.6vw,84px); font-weight: 480; line-height: 1.22; letter-spacing: -.012em; margin: 0 0 32px; }
 .hero-copy h1 .headline-line em { color: #a0a5ac; background: none; -webkit-text-fill-color: currentColor; }
 .hero-copy>p { font-size: 19px; line-height: 1.65; color: #e1e2e4; letter-spacing: 0; }
 .hero-description { font-size: 17px; color: #999da4; line-height: 1.8; margin-top: 15px; }
@@ -558,3 +558,34 @@ select { font-size: 13px; background: #1d242d; border-color: #ffffff24; border-r
  .film-caption { display: block; font-size: 11px; }.film-caption a { margin-top: 8px; }.deliverables h2 { font-size: 36px; }
 }
 @media(max-width:360px) { .hero { padding-inline: 16px; }.hero-copy h1 { font-size: 38px; }.hero-visual { height: 430px; }.hero-robot { height: 415px; }.film-heading h2 { font-size: 33px; }.section-heading h2 { font-size: 30px; } }
+
+/* Robotics edition: natural Chinese spacing, restrained variable weights. */
+.competition h1,.competition h2,.competition h3 { font-family: 'PingFang SC','Exhibit SC','Exhibit Inter',sans-serif; font-feature-settings: 'palt' 0; }
+.competition .hero-copy h1 { font-weight: 480; letter-spacing: -.012em; line-height: 1.24; }
+.hero-copy h1 .headline-line+ .headline-line { margin-top: .035em; }
+.hero-copy h1 .headline-line em { color: #aab6c1; }
+.competition .section-heading h2 { font-size: clamp(30px,3.45vw,48px); font-weight: 500; letter-spacing: 0; line-height: 1.35; }
+.competition .film-heading h2 { font-weight: 480; letter-spacing: -.01em; }
+.competition .problem-intro h2 { font-weight: 500; letter-spacing: 0; }
+.competition .innovation-grid h3,.competition .evidence-card h3,.competition .case-detail h3 { font-weight: 500; letter-spacing: 0; }
+.section-heading>p { font-size: 16px; line-height: 1.85; }
+.hero-copy>p { font-size: 18px; font-weight: 400; }
+.hero-description { font-weight: 400; }
+.hero-visual { perspective: 1200px; }
+.hero-robot { transform-origin: 50% 65%; }
+.architecture button { position: relative; border-bottom-color: transparent!important; }
+.architecture button:after { content:''; position:absolute; height:2px; background:#c5dbe4; bottom:0; left:20px; right:20px; transform:scaleX(0); transform-origin:left; transition:transform .45s cubic-bezier(.16,1,.3,1); }
+.architecture button.active:after { transform:scaleX(1); }
+.architecture-detail { min-height:240px; }
+.film-frame { transform:scale(var(--film-scale,1)); transform-origin:center; }
+.product-film { position:relative; }
+.film-caption { position:relative; padding-top:16px; }
+.film-caption:before { content:''; position:absolute; top:0; left:0; width:var(--film-progress,100%); height:1px; background:#a4bcc44d; }
+.film-play svg { transition:transform .3s ease; }.film-play:hover svg { transform:scale(1.12); }
+@media(max-width:650px) {
+ .competition .section-heading h2 { font-size:30px; line-height:1.4; }
+ .competition .hero-copy h1 { font-size:clamp(40px,10.8vw,62px); letter-spacing:0; }
+ .hero-copy>p { font-size:15px; }.section-heading>p { font-size:14px; }
+ .architecture-detail { min-height:320px; }.film-frame { transform:none; }
+}
+@media(prefers-reduced-motion:reduce) { .film-frame { transform:none!important; }.architecture button:after { transition:none; } }
