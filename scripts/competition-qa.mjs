@@ -100,6 +100,7 @@ try {
   assert.ok(await page.getByRole('link', { name: '← 返回 3S 智慧服务首页' }).isVisible())
   assert.ok(await page.locator('h1').isVisible())
   await page.getByRole('link', { name: '← 返回 3S 智慧服务首页' }).click()
+  await page.locator('.hero-copy h1').waitFor({ state: 'visible' })
   assert.ok(await page.locator('.hero-copy h1').isVisible())
   passed.push('retained technical exhibition and return navigation')
   assert.deepEqual(errors, [])

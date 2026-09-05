@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "qa:visual": "node scripts/competition-qa.mjs",
     "qa:technical": "node scripts/visual-qa.mjs",
+    "qa:premium": "node scripts/premium-qa.mjs",
     "test": "node --test scripts/service-engine.test.mjs"
   },
   "dependencies": {
