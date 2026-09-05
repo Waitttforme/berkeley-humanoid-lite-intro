@@ -80,7 +80,6 @@ const navItems = [
   { id: 'capabilities', label: '实机证据', code: '05' },
   { id: 'design', label: '系统解剖', code: '06' },
   { id: 'stack', label: '开放栈', code: '07' },
-  { id: 'build', label: '构建', code: '08' },
 ]
 
 const PRESENTATION_STEP_MS = 7_500
@@ -93,7 +92,6 @@ const presentationSteps = [
   { id: 'capabilities', code: '05', label: '实机证据', note: '用官方实验素材证明平台能力' },
   { id: 'design', code: '06', label: '系统解剖', note: '结构、真实执行器与可重构形态' },
   { id: 'stack', code: '07', label: '开放软件栈', note: '从 CAD、固件到仿真和实机' },
-  { id: 'build', code: '08', label: '开放构建', note: '把展示落到可复现的官方路径' },
 ]
 
 const heroMetrics = [
@@ -1132,7 +1130,7 @@ function PresentationDock({ active, paused, complete, stepIndex, onToggle, onNex
       <div className="presentation-dock__status">
         <span><i /> {complete ? 'EXHIBITION COMPLETE' : 'COMPETITION SHOWCASE'}</span>
         <strong>{complete ? `${String(presentationSteps.length).padStart(2, '0')} / 展演完成` : `${step.code} / ${step.label}`}</strong>
-        <small>{complete ? '八章系统展演已完成' : step.note}</small>
+        <small>{complete ? '七章系统展演已完成' : step.note}</small>
       </div>
       <div className="presentation-dock__steps" aria-hidden="true">
         {presentationSteps.map((item, index) => (
@@ -1464,7 +1462,7 @@ function App() {
             <p>从关节编码器与机身 IMU，到 STM32G431、4 × CAN 2.0 与 Intel N95。把一台开源人形机器人的本地物联闭环，拆开给你看。</p>
             <div className="hero__actions">
               <button className="primary-action" type="button" onClick={startPresentation}>
-                <CirclePlay size={18} /> 观看约 60 秒系统展演 <ArrowRight size={16} />
+                <CirclePlay size={18} /> 观看约 55 秒系统展演 <ArrowRight size={16} />
               </button>
               <button className="text-action" type="button" onClick={() => scrollTo('digital-twin')}>
                 进入 3D 结构 <ArrowDown size={16} />
@@ -1777,79 +1775,6 @@ function App() {
           </div>
         </section>
 
-        <section className="build-section section-pad" id="build">
-          <div className="page-frame">
-            <SectionHeader
-              index="08"
-              eyebrow="BUILD YOUR OWN / OFFICIAL PATH"
-              title={<>不是观看。<br /><span>是开始构建。</span></>}
-              copy="官方文档把采购、打印、装配、刷写、训练和部署拆成可以逐步验证的路径。整机约三天的装配估算不包含采购与打印时间。"
-              inverse
-            />
-
-            <div className="build-ledger">
-              {buildSteps.map((step) => (
-                <a className={`build-ledger__row ${step.number === '04' ? 'is-focus' : ''}`} href={step.href} target="_blank" rel="noreferrer" key={step.number} data-reveal>
-                  <span className="build-ledger__number">{step.number}</span>
-                  <small className="build-ledger__label">{step.label}</small>
-                  <div className="build-ledger__copy"><h3>{step.title}</h3><p>{step.copy}</p></div>
-                  <em>{step.meta}</em>
-                  <ExternalLink size={17} />
-                </a>
-              ))}
-            </div>
-
-            <div className="build-evidence" data-reveal>
-              <div className="build-evidence__head">
-                <div><ScanLine size={17} /><span>PROJECT BUILD RECORD / 03 STAGES</span></div>
-                <strong>从部件、节点，到肢体子系统。</strong>
-                <small>PHYSICAL PROCESS / PROJECT PHOTOS</small>
-              </div>
-              <div className="build-evidence__grid">
-                {buildEvidence.map((item) => (
-                  <figure className={`build-evidence__card is-stage-${item.code}`} style={{ '--build-photo-position': item.position }} key={item.code}>
-                    <img
-                      src={assetUrl(`${item.asset}-1280.webp`)}
-                      srcSet={`${assetUrl(`${item.asset}-720.webp`)} 720w, ${assetUrl(`${item.asset}-1280.webp`)} 1280w`}
-                      sizes="(max-width: 720px) 82vw, 31vw"
-                      alt={item.alt}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <div className="build-evidence__shade" />
-                    <span className="build-evidence__number">{item.code}</span>
-                    <figcaption>
-                      <small>{item.stage}</small>
-                      <strong>{item.title}</strong>
-                      <p>{item.copy}</p>
-                    </figcaption>
-                  </figure>
-                ))}
-              </div>
-              <div className="build-evidence__foot">
-                <span>PARTS</span><i /><span>NODE</span><i /><span>SUBSYSTEM</span>
-                <strong>照片用于呈现实物过程，不代表当前页面已连接实机遥测。</strong>
-              </div>
-            </div>
-
-            <details className="deep-dive" data-reveal>
-              <summary>
-                <span className="deep-dive__icon"><Zap size={20} /></span>
-                <div><small>TECHNICAL DEEP DIVE / MOTOR CONTROL</small><strong>电机控制器刷写协议</strong></div>
-                <span className="deep-dive__summary-meta">4 PHASES</span>
-                <ChevronDown size={20} />
-              </summary>
-              <div className="deep-dive__body">
-                <div className="flash-mini-step"><span>01</span><div><small>BOOT FLAG</small><strong>启用首次启动配置</strong><p>在连接板卡并运行前，将 FIRST_TIME_BOOTUP 设为 1。</p></div></div>
-                <div className="flash-mini-step"><span>02</span><div><small>FLASH INIT</small><strong>初始化 option bytes</strong><p>通过 Micro USB 运行；若提示升级 ST-LINK，完成升级后再次运行。</p></div></div>
-                <div className="flash-mini-step"><span>03</span><div><small>PARAM LOAD</small><strong>写入 CAN ID 与电机配置</strong><p>按 Joint ID Mapping 设置关节 ID，并选择与硬件匹配的唯一电机 profile。</p></div></div>
-                <div className="flash-mini-step"><span>04</span><div><small>PERSIST</small><strong>恢复从 Flash 加载</strong><p>重新启用 ID 与配置的 Flash 加载，再做最后一次有效烧录。</p></div></div>
-                <a href={LINKS.flash} target="_blank" rel="noreferrer">打开官方完整刷写文档 <ExternalLink size={14} /></a>
-              </div>
-            </details>
-
-          </div>
-        </section>
 
         <section className="safety-interlude" aria-label="研究硬件安全提示">
           <div className="page-frame safety-interlude__inner" data-reveal>

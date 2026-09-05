@@ -119,7 +119,6 @@ for (let index = 0; index < 4; index += 1) {
 }
 await page.locator('.morph-tabs button').first().click()
 await page.locator('.stack-section').screenshot({ path: 'preview-stack.png' })
-await page.locator('.build-section').screenshot({ path: 'preview-build.png' })
 await page.locator('.safety-interlude').screenshot({ path: 'preview-safety.png' })
 await page.locator('.site-footer').screenshot({ path: 'preview-footer.png' })
 
@@ -215,8 +214,6 @@ const stackConsoleVisibleAfterInteraction = await page.locator('.stack-console')
 ))
 await page.locator('.morph-tabs button').nth(1).click()
 const activeMorphology = await page.locator('.morphology-stage__name').textContent()
-await page.locator('.deep-dive summary').click()
-const deepDiveOpen = await page.locator('.deep-dive').evaluate((element) => element.open)
 
 await page.locator('.iot-showcase-section').scrollIntoViewIfNeeded()
 const iotTabs = page.getByRole('tablist', { name: '物联网系统分层' }).getByRole('tab')
@@ -397,7 +394,7 @@ const showcaseNext = await page.evaluate(() => ({
 }))
 
 await page.screenshot({ path: 'preview-showcase-02.png', fullPage: false })
-for (let targetIndex = 2; targetIndex < 8; targetIndex += 1) {
+for (let targetIndex = 2; targetIndex < 7; targetIndex += 1) {
   await page.getByRole('button', { name: '进入下一个展演章节' }).click()
   await page.waitForFunction(
     (expectedIndex) => document.querySelectorAll('.presentation-dock__steps .is-done').length === expectedIndex,
@@ -418,7 +415,7 @@ const showcaseComplete = await page.evaluate(() => ({
   complete: document.querySelector('.presentation-dock')?.classList.contains('is-complete'),
   replayLabel: document.querySelector('.presentation-dock__actions button')?.getAttribute('aria-label'),
   nextDisabled: document.querySelectorAll('.presentation-dock__actions button')[1]?.disabled,
-  buildTop: Math.round(document.querySelector('.build-section')?.getBoundingClientRect().top ?? -1),
+  stackTop: Math.round(document.getElementById('stack')?.getBoundingClientRect().top ?? -1),
 }))
 await page.screenshot({ path: 'preview-showcase-complete.png', fullPage: false })
 
@@ -467,7 +464,6 @@ await mobile.screenshot({ path: 'preview-mobile.png', fullPage: false })
 await mobile.locator('.smart-service-console').screenshot({ path: 'preview-mobile-smart-service.png' })
 await mobile.locator('.capabilities-section').screenshot({ path: 'preview-mobile-capabilities.png' })
 await mobile.locator('.anatomy-layout').screenshot({ path: 'preview-mobile-anatomy.png' })
-await mobile.locator('.build-section').screenshot({ path: 'preview-mobile-build.png' })
 const closedMenuItemVisible = await mobile.locator('.site-nav button').first().isVisible()
 await mobile.locator('.menu-toggle').click()
 const mobileMenuOpen = await mobile.locator('.site-nav').evaluate((element) => element.classList.contains('is-open'))
@@ -549,6 +545,7 @@ const mobileReport = await mobile.evaluate(() => ({
 }))
 
 const assertions = {
+  buildSectionRemoved: await page.locator('#build, .build-section, .deep-dive').count() === 0,
   sourceSectionRemoved: await page.locator('#source, .source-section').count() === 0,
   httpOk: response?.status() === 200,
   titleUpdated: desktopReport.title.includes('Berkeley Humanoid Lite'),
@@ -559,7 +556,6 @@ const assertions = {
     && iotArchitectureVisibleAfterInteraction === true,
   stackInteractionWorks: activeStack?.includes('机器人本体'),
   morphologyInteractionWorks: activeMorphology?.includes('四足'),
-  deepDiveOpens: deepDiveOpen === true,
   desktopModelLoads: desktopModel.loaded === true
     && desktopModel.errorVisible === false
     && desktopModel.urdfRequested === true
@@ -639,7 +635,7 @@ const assertions = {
     && showcaseStarted.paused === false
     && showcaseStarted.activeStepCount === 1
     && showcaseStarted.doneStepCount === 0
-    && showcaseStarted.totalStepCount === 8
+    && showcaseStarted.totalStepCount === 7
     && showcaseStarted.actionCount === 3,
   showcasePauses: showcasePaused.status?.includes('01 / 平台定位')
     && showcasePaused.paused === true
@@ -651,12 +647,12 @@ const assertions = {
     && showcaseNext.paused === true
     && showcaseNext.activeStepCount === 1
     && showcaseNext.doneStepCount === 1,
-  showcaseCompletesWithoutAutoExit: showcaseComplete.status?.includes('08 / 展演完成')
+  showcaseCompletesWithoutAutoExit: showcaseComplete.status?.includes('07 / 展演完成')
     && showcaseComplete.complete === true
     && showcaseComplete.replayLabel === '重新播放比赛展演'
     && showcaseComplete.nextDisabled === true
-    && showcaseComplete.buildTop >= 0
-    && showcaseComplete.buildTop < 140,
+    && showcaseComplete.stackTop >= 0
+    && showcaseComplete.stackTop < 140,
   showcaseReplayWorks: showcaseReplayed.status?.includes('01 / 平台定位')
     && showcaseReplayed.complete === false
     && showcaseReplayed.paused === false,
@@ -710,7 +706,6 @@ console.log(JSON.stringify({
     activeAnatomy,
     activeStack,
     activeMorphology,
-    deepDiveOpen,
     motionState,
     explodedState,
     restoredState,
