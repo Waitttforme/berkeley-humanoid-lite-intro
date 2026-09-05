@@ -81,7 +81,6 @@ const navItems = [
   { id: 'design', label: '系统解剖', code: '06' },
   { id: 'stack', label: '开放栈', code: '07' },
   { id: 'build', label: '构建', code: '08' },
-  { id: 'source', label: '来源', code: '09' },
 ]
 
 const PRESENTATION_STEP_MS = 7_500
@@ -95,7 +94,6 @@ const presentationSteps = [
   { id: 'design', code: '06', label: '系统解剖', note: '结构、真实执行器与可重构形态' },
   { id: 'stack', code: '07', label: '开放软件栈', note: '从 CAD、固件到仿真和实机' },
   { id: 'build', code: '08', label: '开放构建', note: '把展示落到可复现的官方路径' },
-  { id: 'source', code: '09', label: '官方入口', note: '所有模型、参数与结论回到原始资料' },
 ]
 
 const heroMetrics = [
@@ -1134,7 +1132,7 @@ function PresentationDock({ active, paused, complete, stepIndex, onToggle, onNex
       <div className="presentation-dock__status">
         <span><i /> {complete ? 'EXHIBITION COMPLETE' : 'COMPETITION SHOWCASE'}</span>
         <strong>{complete ? `${String(presentationSteps.length).padStart(2, '0')} / 展演完成` : `${step.code} / ${step.label}`}</strong>
-        <small>{complete ? '所有模型、参数与结论均可回到官方来源' : step.note}</small>
+        <small>{complete ? '八章系统展演已完成' : step.note}</small>
       </div>
       <div className="presentation-dock__steps" aria-hidden="true">
         {presentationSteps.map((item, index) => (
@@ -1466,7 +1464,7 @@ function App() {
             <p>从关节编码器与机身 IMU，到 STM32G431、4 × CAN 2.0 与 Intel N95。把一台开源人形机器人的本地物联闭环，拆开给你看。</p>
             <div className="hero__actions">
               <button className="primary-action" type="button" onClick={startPresentation}>
-                <CirclePlay size={18} /> 观看约 70 秒系统展演 <ArrowRight size={16} />
+                <CirclePlay size={18} /> 观看约 60 秒系统展演 <ArrowRight size={16} />
               </button>
               <button className="text-action" type="button" onClick={() => scrollTo('digital-twin')}>
                 进入 3D 结构 <ArrowDown size={16} />
@@ -1866,25 +1864,6 @@ function App() {
           </div>
         </section>
 
-        <section className="source-section" id="source" style={{ '--source-bg': `url(${assetUrl('media/teleoperation.png')})` }}>
-          <div className="page-frame source-layout">
-            <div className="source-copy" data-reveal>
-              <span className="section-kicker"><i /> 09 / SOURCE OF TRUTH</span>
-              <h2>展演结束。<br /><span>验证开始。</span></h2>
-              <p>模型、参数与结论，都可以回到官方文档、开源仓库与论文原文。本页是入口，不是替代品。</p>
-              <div className="source-actions">
-                <a className="primary-action" href={LINKS.docs} target="_blank" rel="noreferrer">打开官方文档 <ExternalLink size={16} /></a>
-                <CopyLink value={LINKS.paper} />
-              </div>
-            </div>
-            <div className="source-links" data-reveal>
-              <a href={LINKS.site} target="_blank" rel="noreferrer"><span>01</span><div><small>lite.berkeley-humanoid.org</small><strong>官方项目主页</strong></div><ExternalLink size={16} /></a>
-              <a href={LINKS.github} target="_blank" rel="noreferrer"><span>02</span><div><small>github.com/HybridRobotics</small><strong>GitHub 开源仓库</strong></div><Github size={17} /></a>
-              <a href={LINKS.paper} target="_blank" rel="noreferrer"><span>03</span><div><small>arxiv.org/abs/2504.17249</small><strong>完整研究论文</strong></div><ExternalLink size={16} /></a>
-              <a href={LINKS.releases} target="_blank" rel="noreferrer"><span>04</span><div><small>berkeley-humanoid-lite.gitbook.io</small><strong>CAD、BOM 与版本资源</strong></div><ExternalLink size={16} /></a>
-            </div>
-          </div>
-        </section>
       </main>
 
       <PresentationDock
