@@ -82,7 +82,26 @@ try {
   assert.equal(await page.evaluate(() => document.fonts.status), 'loaded')
   assert.deepEqual(await page.locator('.competition h1,.competition h2,.competition h3').allTextContents().then(titles => titles.filter(t => /[。！？]$/.test(t.trim()))), [], 'display headings omit sentence punctuation')
   passed.push('font loading complete; CDP confirms actual rendered font glyphs')
-  for (const width of [320, 390, 768, 1024, 1440]) await inspectLayout(width)
+  for (const width of [320, 390, 768, 1024, 1440]) {
+    for (let layer = 0; layer < 5; layer++) {
+      await page.locator('.architecture button').nth(layer).click()
+      await page.locator(`[data-layer-detail="${layer}"]`).waitFor({ state: 'visible' })
+      assert.equal(await page.locator('.mechanism-grid h4').count(), 3)
+      await inspectLayout(width, `home layer ${layer + 1}`)
+    }
+    for (const type of ['service', 'hardware']) {
+      await page.locator('.design-perspectives button').nth(type === 'service' ? 0 : 1).click()
+      for (let item = 0; item < 3; item++) {
+        const toggle = page.locator('.design-item h3 button').nth(item)
+        if (await toggle.getAttribute('aria-expanded') !== 'true') await toggle.click()
+        assert.equal(await page.locator('.design-body:visible dl>div').count(), 4)
+        await inspectLayout(width, `innovation ${type} ${item + 1}`)
+      }
+    }
+  }
+  await page.locator('.design-perspectives button').first().click()
+  await page.locator('.architecture button').last().click()
+  passed.push('all five technical layers and six innovation entries expand at every viewport')
   const reduced = await page.evaluate(() => ({
     invisibleHeadings: [...document.querySelectorAll('h1,h2,h3')].filter(el => {
       for (let a = el; a; a = a.parentElement) if (getComputedStyle(a).opacity === '0') return true

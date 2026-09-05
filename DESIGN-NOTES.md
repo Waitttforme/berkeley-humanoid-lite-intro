@@ -1,5 +1,18 @@
 # Exhibition design revision
 
+## Detailed engineering content
+
+Reviewed primary technical sources for the technical-solution and innovation expansion:
+
+- https://arxiv.org/html/2504.17249v1 — sections III-A (system topology), III-C/D (modularity), V-A (policy inputs and 25 Hz inference), VI (thermal limitations).
+- https://berkeley-humanoid-lite.gitbook.io/docs/in-depth-contents/field-oriented-control-foc-operation — current control, coordinate transformations and position loop.
+- https://berkeley-humanoid-lite.gitbook.io/docs/in-depth-contents/motor-controller-firmware-execution-timing-information — firmware timing must be evaluated independently.
+- https://berkeley-humanoid-lite.gitbook.io/docs/getting-started-with-software/the-on-board-computer — CAN port / node checks and independent IMU connection.
+- https://berkeley-humanoid-lite.gitbook.io/docs/getting-started-with-software/software-development-environment-overview — training, asset and low-level packages.
+- https://berkeley-humanoid-lite.gitbook.io/docs/getting-started-with-software/sim2sim-validation — MuJoCo validation and command/policy interfaces.
+
+The interface distinguishes platform architecture, current browser implementation and future integration. 250 Hz / 25 Hz are paper configurations, 1-second samples are browser simulation. The paper's Isaac Gym experiment and the current docs' Isaac Lab package are presented as distinct version contexts. New service/innovation interpretations are explicitly project design reasoning; no paper result is claimed as this project's measurement. The report includes the same distinctions.
+
 Current update: the homepage motion-film section was removed at the user's request, together with its playback component and scroll-expansion listener. The design observations below document earlier iterations.
 
 ## Robotics typography and motion follow-up

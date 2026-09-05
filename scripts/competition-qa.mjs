@@ -90,7 +90,7 @@ try {
     passed.push(`${width}px viewport: no horizontal overflow`)
   }
   await page.goto(`${base}?view=report`, { waitUntil: 'networkidle' })
-  assert.equal(await page.locator('.report-page section').count(), 9)
+  assert.equal(await page.locator('.report-page section').count(), 10)
   await page.emulateMedia({ media: 'print' })
   assert.equal(await page.locator('.report-tools').isVisible(), false)
   await page.emulateMedia({ media: 'screen' })
