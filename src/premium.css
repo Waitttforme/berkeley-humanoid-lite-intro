@@ -560,6 +560,9 @@ select { font-size: 13px; background: #1d242d; border-color: #ffffff24; border-r
 @media(max-width:360px) { .hero { padding-inline: 16px; }.hero-copy h1 { font-size: 38px; }.hero-visual { height: 430px; }.hero-robot { height: 415px; }.film-heading h2 { font-size: 33px; }.section-heading h2 { font-size: 30px; } }
 
 /* Robotics edition: natural Chinese spacing, restrained variable weights. */
+.evidence-grid{row-gap:42px;align-items:start}.evidence-image img{object-position:center}.evidence-card:focus-visible{outline-offset:8px}
+@media(min-width:651px) and (max-width:1000px){.evidence-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:650px){.evidence-grid{row-gap:32px}}
 .competition h1,.competition h2,.competition h3 { font-family: 'PingFang SC','Exhibit SC','Exhibit Inter',sans-serif; font-feature-settings: 'palt' 0; }
 .competition .hero-copy h1 { font-weight: 480; letter-spacing: -.012em; line-height: 1.24; }
 .hero-copy h1 .headline-line+ .headline-line { margin-top: .035em; }
