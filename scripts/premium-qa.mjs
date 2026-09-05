@@ -73,7 +73,7 @@ try {
   await cdp.send('DOM.enable'); await cdp.send('CSS.enable')
   const { root } = await cdp.send('DOM.getDocument')
   const fontUsage = {}
-  for (const selector of ['.hero-copy h1', '.hero-description', '.hero-topline', '.metric-card strong']) {
+  for (const selector of ['.hero-copy h1', '.hero-description', '.hero-topline>span:first-child', '.metric-card strong']) {
     const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector })
     fontUsage[selector] = (await cdp.send('CSS.getPlatformFontsForNode', { nodeId })).fonts
     assert.ok(fontUsage[selector].length && fontUsage[selector].every(f => f.glyphCount > 0), `${selector} must have rendered glyphs`)
@@ -95,6 +95,14 @@ try {
   await page.screenshot({ path: 'preview-premium-desktop.png', fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })
   await page.screenshot({ path: 'preview-premium-mobile.png', fullPage: true })
+  await page.getByRole('button', { name: '播放平台运动影像', exact: true }).click()
+  await page.waitForFunction(() => !document.querySelector('.film-frame video').paused)
+  await page.getByRole('button', { name: '暂停平台运动影像', exact: true }).click()
+  assert.ok(await page.locator('.film-frame video').evaluate(v => v.paused))
+  await page.getByRole('button', { name: '播放平台运动影像', exact: true }).click()
+  await page.locator('#outcomes').scrollIntoViewIfNeeded()
+  await page.waitForFunction(() => document.querySelector('.film-frame video').paused)
+  passed.push('product film plays on request, pauses on request and offscreen')
   await page.goto(`${base}?view=report`, { waitUntil: 'networkidle' })
   for (const width of [320, 390, 768, 1024, 1440]) await inspectLayout(width, 'report')
   console.log('Layout inspection:', JSON.stringify(findings, null, 2))
