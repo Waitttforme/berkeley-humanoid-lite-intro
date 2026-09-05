@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { ArrowDown, ArrowUpRight, Check, ChevronRight } from 'lucide-react'
+import { ArrowDown, ArrowUpRight, Check, ChevronRight, ScanLine, Layers3, SlidersHorizontal, CircleCheck, Cable } from 'lucide-react'
 import './engineering.css'
 
 const docs = 'https://berkeley-humanoid-lite.gitbook.io/docs/'
@@ -101,11 +101,13 @@ export function SystemOverview() {
 
 export function LayerDeepDive({ index }) {
   const item = layerDetails[index]
+  const icons = [ScanLine, Layers3, SlidersHorizontal]
   return <div className="layer-deep-dive" key={index} data-layer-detail={index}>
+    <div className="layer-heading-line"><span>机制详解</span><span>0{index + 1} / 05</span></div>
     <h3>{item.title}</h3>
-    <ol className="mechanism-flow">{item.steps.map((step, i) => <li key={step}><span>{step}</span>{i < item.steps.length - 1 && <ChevronRight size={15} aria-hidden="true"/>}</li>)}</ol>
-    <div className="mechanism-grid">{item.mechanism.map(([title, text]) => <div key={title}><h4>{title}</h4><p>{text}</p></div>)}</div>
-    <div className="layer-service-map"><div><span>对应本次演示</span><p>{item.mapping}</p></div><div><span>实现条件与边界</span><p>{item.boundary}</p></div></div>
+    <ol className="mechanism-flow">{item.steps.map((step, i) => <li key={step} style={{ '--step': i }}><span><i aria-hidden="true">{String(i + 1).padStart(2, '0')}</i>{step}</span>{i < item.steps.length - 1 && <ChevronRight size={15} aria-hidden="true"/>}</li>)}</ol>
+    <div className="mechanism-grid">{item.mechanism.map(([title, text], i) => { const Icon = icons[i]; return <div key={title} className="mechanism-card" style={{ '--card': i }}><div className="mechanism-card-top"><Icon size={20} strokeWidth={1.4} aria-hidden="true"/><span>0{i + 1}</span></div><h4>{title}</h4><p>{text}</p></div> })}</div>
+    <div className="layer-service-map"><div><span><CircleCheck size={17} aria-hidden="true"/>对应本次演示</span><p>{item.mapping}</p></div><div><span><Cable size={17} aria-hidden="true"/>实现条件与边界</span><p>{item.boundary}</p></div></div>
     <SourceLink href={item.href}>{item.source}</SourceLink>
   </div>
 }
