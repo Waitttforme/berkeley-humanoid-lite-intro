@@ -1,5 +1,7 @@
 # Exhibition design revision
 
+Current update: the homepage motion-film section was removed at the user's request, together with its playback component and scroll-expansion listener. The design observations below document earlier iterations.
+
 ## Robotics typography and motion follow-up
 
 Inspected https://www.figure.ai/ and https://www.unitree.com/ in a 1440px desktop browser. Figure rendered its visible editorial headings in PP Neue Machina Plain at 28px/400 with normal letter spacing, supported by muted video elements. Unitree's inspected Chinese headings used medium weights with normal letter spacing and system/PingFang fallbacks. Boston Dynamics returned an access-verification page and was excluded from design conclusions. No proprietary font assets were copied.
