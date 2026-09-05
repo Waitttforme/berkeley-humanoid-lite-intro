@@ -6,7 +6,7 @@ const server = await preview({
   logLevel: 'silent',
   preview: { host: '127.0.0.1', port: 4174, strictPort: true },
 })
-const baseUrl = 'http://127.0.0.1:4174/'
+const baseUrl = 'http://127.0.0.1:4174/?view=technical'
 const MODEL_TIMEOUT = 120_000
 const IOT_LAYER_EXPECTATIONS = [
   { id: 'sense', label: '感知层', title: '可靠感知', metric: '22 AXES', step: 'STEP 01 / 05' },
@@ -476,6 +476,7 @@ await mobile.locator('.source-section').screenshot({ path: 'preview-mobile-sourc
 const closedMenuItemVisible = await mobile.locator('.site-nav button').first().isVisible()
 await mobile.locator('.menu-toggle').click()
 const mobileMenuOpen = await mobile.locator('.site-nav').evaluate((element) => element.classList.contains('is-open'))
+await mobile.waitForFunction(() => document.activeElement === document.querySelector('.site-nav button'))
 const menuFocusedItem = await mobile.evaluate(() => document.activeElement?.textContent?.replace(/\s+/g, ' ').trim())
 await mobile.keyboard.press('Escape')
 const menuClosedAfterEscape = await mobile.locator('.site-nav').evaluate((element) => !element.classList.contains('is-open'))
