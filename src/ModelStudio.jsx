@@ -1,19 +1,60 @@
 import React, { Suspense, useCallback, useState } from 'react'
-import { Box, Play, Pause, RotateCcw, Layers3, ArrowRight } from 'lucide-react'
 import './model-studio.css'
-const Viewer=React.lazy(()=>import('./StudioViewer.jsx'))
-const views=[['hero','整机视图','观察关节与机身的整体比例'],['side','侧向视图','查看肢体层次与结构布局'],['exploded','拆解视图','理解模块之间的组成关系']]
-const motions=[['idle','待机'],['wave','招手'],['squat','下蹲'],['walk','步行'],['combat','姿态展示'],['attention','复位']]
-class ModelBoundary extends React.Component{state={failed:false};static getDerivedStateFromError(){return{failed:true}}render(){return this.state.failed?<p role="alert">模型模块暂时无法加载，请刷新重试。静态视图仍可查看。</p>:this.props.children}}
-export default function ModelStudio(){
- const [active,setActive]=useState(false),[motion,setMotion]=useState('idle'),[exploded,setExploded]=useState(false),[paused,setPaused]=useState(false),[reset,setReset]=useState(0),[status,setStatus]=useState({loaded:false,progress:0}),[view,setView]=useState(0),[attempt,setAttempt]=useState(0)
- const update=useCallback(value=>setStatus(s=>({...s,...value})),[])
- const image=`${import.meta.env.BASE_URL}media/classmate/bhl-engineering-${views[view][0]}.png`
- const retry=()=>{setStatus({loaded:false,progress:0});setAttempt(a=>a+1)}
- return <section className="section model-studio" id="model-studio"><div className="section-heading"><div><span className="eyebrow">模型与系统</span><h2>从三维结构理解机器人</h2></div><p>旋转观察、切换动作、展开结构，再进入技术方案理解每个模块在系统中的作用。</p></div>
- <div className="studio-layout"><div className="studio-stage"><div className="studio-top"><span><Box size={16}/>交互数字样机</span><small>程序化动作 · 非实机遥测</small></div>
- {!active?<div className="studio-poster"><img src={`${import.meta.env.BASE_URL}media/classmate/bhl-engineering-hero.png`} alt="同学交接包中的整机模型渲染" loading="lazy"/><button className="button primary" onClick={()=>setActive(true)}><Play size={16}/>加载交互模型</button><small>按需加载 · 桌面拖动旋转 / 手机双指操作</small></div>:<div className="studio-live"><ModelBoundary key={attempt}><Suspense fallback={<p className="studio-loading">正在准备模型引擎…</p>}><Viewer motion={motion} exploded={exploded} paused={paused} reset={reset} onState={update}/></Suspense></ModelBoundary>{!status.loaded&&!status.error&&<div className="studio-loading" role="status">正在加载模型 {status.progress}%</div>}{status.error&&<div className="studio-error" role="alert"><p>{status.error}</p><button className="button ghost" onClick={retry}>重试加载</button></div>}</div>}
- <div className="studio-controls" role="group" aria-label="数字样机动作">{motions.map(([id,label])=><button key={id} disabled={!status.loaded||!!status.error} aria-pressed={motion===id&&!exploded} onClick={()=>{setMotion(id);setExploded(false);setPaused(false)}}>{label}</button>)}</div>
- <div className="studio-tools"><button disabled={!status.loaded||!!status.error} aria-pressed={exploded} onClick={()=>setExploded(!exploded)}><Layers3 size={15}/>{exploded?'重新组装':'展开结构'}</button><button disabled={!status.loaded||!!status.error} aria-pressed={paused} onClick={()=>setPaused(!paused)}>{paused?<Play size={15}/>:<Pause size={15}/>} {paused?'继续动作':'暂停动作'}</button><button disabled={!status.loaded||!!status.error} onClick={()=>setReset(n=>n+1)}><RotateCcw size={15}/>重置视角</button></div></div>
- <aside className="studio-reference"><div className="studio-reference-heading"><span>结构观察</span><small>03 个模型视角</small></div><div className="studio-views" role="group" aria-label="模型渲染视角">{views.map((v,i)=><button key={v[0]} aria-pressed={view===i} onClick={()=>setView(i)}>{v[1]}</button>)}</div><figure><img key={image} src={image} alt={views[view][1]} loading="lazy"/><figcaption><strong>{views[view][1]}</strong><p>{views[view][2]}</p></figcaption></figure><div className="studio-notes"><div><span>结构</span><strong>22 个可动关节 / 26 个网格</strong></div><div><span>动作</span><strong>关节姿态插值与程序编排</strong></div><div><span>下蹲</span><strong>脚底高度补偿 · 几何示意</strong></div></div><p className="studio-boundary">动作和拆解用于结构讲解，不是物理仿真或真实运动性能验证。</p><a href="#solution">继续查看系统技术方案<ArrowRight size={15}/></a></aside></div></section>
+
+const Viewer = React.lazy(() => import('./StudioViewer.jsx'))
+const motions = [
+  ['idle', '待机', 'IDLE'], ['wave', '招手', 'WAVE'], ['squat', '下蹲', 'SQUAT'],
+  ['walk', '步行', 'WALK'], ['combat', '姿态展示', 'POSE'], ['attention', '复位', 'RESET'],
+]
+
+class ModelBoundary extends React.Component {
+  state = { failed: false }
+  static getDerivedStateFromError() { return { failed: true } }
+  render() { return this.state.failed ? <p className="twin-error" role="alert">三维模块暂时无法加载，请刷新重试</p> : this.props.children }
+}
+
+export default function ModelStudio() {
+  const [motion, setMotion] = useState('idle')
+  const [exploded, setExploded] = useState(false)
+  const [paused, setPaused] = useState(false)
+  const [reset, setReset] = useState(0)
+  const [attempt, setAttempt] = useState(0)
+  const [status, setStatus] = useState({ loaded: false, progress: 0 })
+  const update = useCallback((value) => setStatus((current) => ({ ...current, ...value })), [])
+  const activeMotion = motions.find(([id]) => id === motion)
+  const selectMotion = (id) => { setMotion(id); setExploded(false); setPaused(false) }
+  const retry = () => { setStatus({ loaded: false, progress: 0 }); setAttempt((value) => value + 1) }
+
+  return <section className={`model-studio twin-showcase${exploded ? ' is-exploded' : ''}`} id="model-studio">
+    <div className="twin-grid" aria-hidden="true" /><div className="twin-scan" aria-hidden="true" />
+    <div className="twin-side-index" aria-hidden="true"><b>02</b><span>DIGITAL<br />TWIN</span><i /></div>
+    <div className="twin-copy">
+      <div className="twin-eyebrow"><span /> 交互数字样机 · 3S</div>
+      <h2>让结构<br /><em>真正可见</em></h2>
+      <p>旋转观察整机结构，切换关节姿态，展开全部零件。用一台可交互数字样机理解机器人如何成为物联网终端。</p>
+      <div className="twin-route" aria-label="物联网数据链"><span><i />感知</span><b>→</b><span><i />边缘</span><b>→</b><span><i />互联</span><b>→</b><span><i />服务</span></div>
+      <div className="twin-actions">
+        <button className="twin-primary" onClick={() => setExploded((value) => !value)}><span><small>{exploded ? 'ASSEMBLY PROTOCOL' : 'STRUCTURE SCAN'}</small><strong>{exploded ? '重新组装' : '探索结构'}</strong></span><i aria-hidden="true"><b>{exploded ? '↙' : '↗'}</b></i></button>
+        <button className="twin-icon-button" onClick={() => setReset((value) => value + 1)} aria-label="重置视角">◎</button>
+      </div>
+    </div>
+    <div className="twin-stage">
+      <div className="twin-holo-disc" /><div className="twin-energy-core" />
+      <div className="twin-orbit twin-orbit-one" /><div className="twin-orbit twin-orbit-two" />
+      <div className="twin-hud-arc twin-hud-arc-a" /><div className="twin-hud-arc twin-hud-arc-b" />
+      <div className="twin-reticle" aria-hidden="true"><i /><i /><i /><i /><b className="axis-x">X</b><b className="axis-y">Y</b><b className="axis-z">Z</b></div>
+      <div className="twin-telemetry twin-telemetry-top"><span>EDGE GATEWAY / 3S-22</span><b>{exploded ? 'DEVICE TOPOLOGY VIEW' : '22 JOINT NODES READY'}</b></div>
+      <div className="twin-telemetry twin-telemetry-bottom"><span>CAN0 + CAN1 / SERVICE LINK</span><b>{exploded ? 'ASSEMBLY EXPANDED' : 'DIGITAL MODEL ACTIVE'}</b></div>
+      <img className="twin-poster" src={`${import.meta.env.BASE_URL}media/classmate/bhl-engineering-hero.png`} alt="人形机器人数字样机" />
+      <ModelBoundary key={attempt}><Suspense fallback={null}><Viewer motion={motion} exploded={exploded} paused={paused} reset={reset} onState={update} /></Suspense></ModelBoundary>
+      {!status.loaded && !status.error && <div className="twin-loader" role="status"><span /><small>正在装配数字样机 · {status.progress}%</small></div>}
+      {status.error && <div className="twin-error" role="alert"><p>{status.error}</p><button onClick={retry}>重试加载</button></div>}
+      <div className="twin-model-caption"><span className="live-dot" /><div><small>FULL-BODY DIGITAL MODEL</small><strong>{exploded ? 'EXPLODED VIEW' : '22-DOF MOTION'}</strong></div></div>
+      <div className="twin-interaction-hint"><span>↔</span><small>按住拖动旋转<br />双指操作模型</small></div>
+    </div>
+    <div className="twin-motion-console" aria-label="数字样机动作控制台"><div className="twin-motion-head"><div><span className="live-dot" /><small>MOTION STUDIO</small></div><strong>{exploded ? 'ASSEMBLY EXPLODED' : `${activeMotion?.[2]} SEQUENCE`}</strong></div><div className="twin-motion-list">{motions.map(([id, label, code], index) => <button key={id} className={!exploded && motion === id ? 'is-active' : ''} disabled={!status.loaded || !!status.error} onClick={() => selectMotion(id)} aria-pressed={!exploded && motion === id}><i>{String(index + 1).padStart(2, '0')}</i><span>{label}<small>{code}</small></span></button>)}</div></div>
+    <aside className="twin-specs" aria-label="数字样机参数"><div><strong>22</strong><span>可动关节<br />JOINTS</span></div><div><strong>26</strong><span>结构网格<br />MESHES</span></div><div><strong>6</strong><span>演示姿态<br />MOTIONS</span></div></aside>
+    <button className="twin-pause" disabled={!status.loaded} onClick={() => setPaused((value) => !value)}>{paused ? '继续动作' : '暂停动作'}</button>
+    <p className="twin-boundary">程序化姿态与结构拆解演示 · 非实机遥测或物理性能验证</p>
+  </section>
 }
