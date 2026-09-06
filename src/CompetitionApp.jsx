@@ -7,6 +7,12 @@ import './effects.css'
 import useExhibitionMotion from './useExhibitionMotion.js'
 import ModelStudio from './ModelStudio.jsx'
 import { SystemOverview, LayerDeepDive, InnovationStudy, ReportTechnicalSupplement } from './EngineeringDetails.jsx'
+import motion01 from './assets/motion/robot-motion-01.mp4'
+import motion01Poster from './assets/motion/robot-motion-01-poster.webp'
+import motion02 from './assets/motion/robot-motion-02.mp4'
+import motion02Poster from './assets/motion/robot-motion-02-poster.webp'
+import motion03 from './assets/motion/robot-motion-03.mp4'
+import motion03Poster from './assets/motion/robot-motion-03-poster.webp'
 
 const asset = path => `${import.meta.env.BASE_URL}${path}`
 const nav = [['overview', '项目总览'], ['solution', '技术方案'], ['demo', '交互演示'], ['innovation', '创新设计'], ['evidence', '技术证据'], ['outcomes', '应用与成果']]
@@ -30,6 +36,11 @@ const evidence = [
   ['physical-actuator', '06 / 关节执行器', '一个关节中的机电集成', '电机、结构件、接口与线束组合为单个执行节点，便于理解部件定位与维护对象。'],
   ['physical-network', '07 / 多节点接线', '从单节点走向分布式连接', '工作台上的多组电机、控制板与线束，展示多节点装配和连接规模。'],
   ['physical-mapping', '08 / 整机展开', '沿结构认识部件关系', '整机展开状态呈现机身、肢体与线束之间的空间关系，可与数字样机的部件定位对照。'],
+]
+const motionRecords = [
+  [motion01, motion01Poster, '01', '实机动态记录一', '00:42', '整机现场动作影像，用于呈现已有实体机器人的动态状态。'],
+  [motion02, motion02Poster, '02', '实机动态记录二', '00:35', '项目调试过程影像，用于补充静态装配照片之外的工程记录。'],
+  [motion03, motion03Poster, '03', '实机动态记录三', '00:24', '实体机器人动作片段，用于展示本项目已有实物工作过程。'],
 ]
 function Heading({ index, label, title, text }) { return <div className="section-heading"><div><span className="eyebrow">{index} / {label}</span><h2>{title}</h2></div><p>{text}</p></div> }
 function saveFile(name, body) { const url = URL.createObjectURL(new Blob([body], { type: 'application/json;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000) }
@@ -94,6 +105,33 @@ function ServiceDemo() {
   </div>
 }
 
+function MotionEvidence() {
+  const container = useRef(null)
+  const videos = useRef([])
+  const [playing, setPlaying] = useState(null)
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) return
+      videos.current.forEach(video => video?.pause())
+      setPlaying(null)
+    }, { threshold: 0.08 })
+    if (container.current) observer.observe(container.current)
+    return () => observer.disconnect()
+  }, [])
+  const play = async index => {
+    videos.current.forEach((video, other) => { if (other !== index) video?.pause() })
+    try { await videos.current[index]?.play() } catch { /* Native controls remain available. */ }
+  }
+  return <div className="motion-evidence" ref={container} aria-labelledby="motion-evidence-title">
+    <div className="motion-evidence__head"><div><span className="eyebrow">PHYSICAL ROBOT / MOTION EVIDENCE</span><h3 id="motion-evidence-title">实机动态记录</h3></div><p>三段均为本项目自有现场影像。点击后按需加载，一次只播放一段。</p></div>
+    <div className="motion-records">{motionRecords.map(([file, poster, index, title, duration, description], position) => <article className={`motion-record${playing === position ? ' is-playing' : ''}`} key={file}>
+      <div className="motion-record__media"><video ref={node => { videos.current[position] = node }} controls preload="none" playsInline poster={poster} onPlay={() => { videos.current.forEach((video, other) => { if (other !== position) video?.pause() }); setPlaying(position) }} onPause={() => setPlaying(current => current === position ? null : current)} onEnded={() => setPlaying(null)} aria-label={`${title}，${duration}`}><source src={file} type="video/mp4"/></video>{playing !== position && <button className="motion-record__play" onClick={() => play(position)} aria-label={`播放${title}`}><Play size={19} fill="currentColor"/><span>播放现场记录</span></button>}<span className="motion-record__duration">{duration}</span></div>
+      <div className="motion-record__copy"><span>{index} / OWN PROJECT FOOTAGE</span><h4>{title}</h4><p>{description}</p></div>
+    </article>)}</div>
+    <div className="motion-evidence__truth"><span className="live-dot"/><p>项目自有实物影像 · 非实时遥测 · 不作为负载、续航或控制精度测试结论</p></div>
+  </div>
+}
+
 function Report() {
   return <main className="report-page"><div className="report-tools"><a href={import.meta.env.BASE_URL}>← 返回展厅</a><button className="button primary" onClick={() => window.print()}>打印 / 保存为 PDF</button></div><span className="eyebrow">3S / PROJECT TECHNICAL REPORT</span><h1>人形机器人智慧运维与任务服务系统</h1><p className="report-lead">项目技术报告 · 软件演示版 v1.0</p><p>本报告对应当前可运行的浏览器演示。真实硬件架构、已有实物资料、本次软件实现与未来验证计划分别说明；不将模拟结果作为实机性能结论。</p>{reportSections.map(([title, body]) => <section key={title}><h2>{title}</h2>{body.map((p, i) => <p key={i}>{p}</p>)}</section>)}<ReportTechnicalSupplement/><section><h2>附录：现场演示步骤</h2><ol><li>进入交互演示，选择关节温升并启动巡检。</li><li>注入异常，查看温度、电流规则及对应诊断说明。</li><li>确认暂停任务，生成工单并勾选维护检查项。</li><li>选择故障仍在进行复检，验证工单不能归档。</li><li>改用恢复样本复检，归档并恢复任务，导出 JSON 事件记录。</li><li>重置后测试通信、姿态场景或无异常巡检；可使用自动演示。</li></ol></section><p className="report-footer">资料与模型归属见网站技术资料页及模型 ATTRIBUTION.md。本文中的阈值均为软件演示规则。</p></main>
 }
@@ -133,7 +171,7 @@ export default function CompetitionApp() {
     <section className="section" id="solution"><Heading index="01" label="SYSTEM ARCHITECTURE" title="端到边的系统协同" text="以设备状态为共同语言，把感知、控制、通信和边缘处理组织成可理解的系统。"/><SystemOverview/><div className="engineering-workbench"><div className="workbench-heading"><div><span className="workbench-dot" aria-hidden="true"/><strong>系统分层详解</strong></div><span>架构说明 · 非实时链路</span></div><div className="architecture" role="group" aria-label="技术方案分层导航">{layers.map((l, i) => <button key={l.en} className={i === layer ? 'active' : ''} aria-pressed={i === layer} onClick={() => setLayer(i)}><span>0{i + 1}<l.icon size={23}/></span><strong>{l.name}</strong><small>{l.en}</small>{i < 4 && <ChevronRight className="layer-arrow" size={18}/>}</button>)}</div><div className="architecture-detail" key={current.en}><div><span className="pill">{current.status}</span><h3>{current.name}</h3><p>{current.detail}</p></div><dl><div><dt>INPUT / 输入</dt><dd>{current.input}</dd></div><div><dt>OUTPUT / 输出</dt><dd>{current.output}</dd></div></dl></div><LayerDeepDive index={layer}/></div><div className="boundary-note"><CircleAlert size={17}/><p>当前服务端点使用浏览器模拟数据。本体 → 浏览器的遥测适配尚未接入；IMU 通过独立 USB 支路汇入机载计算，不经过关节控制器。</p><a href="?view=technical#iot-showcase">查看详细链路<ArrowUpRight size={15}/></a></div></section>
     <section className="section demo-section" id="demo"><Heading index="02" label="LIVE SERVICE DEMO" title="让异常处理形成闭环" text="亲手操作一次巡检：发现问题、暂停任务、完成维护，再用复检确认服务结果。"/><ServiceDemo/></section>
     <section className="section" id="innovation"><Heading index="03" label="INNOVATION BY DESIGN" title="连接状态与服务的关键设计" text="从本体技术到智慧服务，分别说明问题、机制、价值与验证方法。点击条目展开细节。"/><InnovationStudy/></section>
-    <section className="section evidence-section" id="evidence"><Heading index="04" label="ENGINEERING EVIDENCE" title="工程实物与技术证据" text="已有装配记录用于说明工程对象，软件交互用于演示服务机制。照片不作为实时接入或性能验证的证明。"/><div className="evidence-grid">{evidence.map((e) => <button className="evidence-card" key={e[0]} onClick={event => { photoTrigger.current = event.currentTarget; setPhoto(e) }}><div className="evidence-image"><img src={asset(`media/project-evidence/${e[0]}-720.webp`)} alt={e[2]} srcSet={`${asset(`media/project-evidence/${e[0]}-720.webp`)} 720w, ${asset(`media/project-evidence/${e[0]}-1280.webp`)} 1280w`} sizes="(max-width: 650px) 90vw, (max-width: 1000px) 44vw, 30vw" loading="lazy" decoding="async" width="720" height="540"/><span>已有实物记录 <ArrowUpRight size={15}/></span></div><small>{e[1]}</small><h3>{e[2]}</h3><p>{e[3]}</p></button>)}</div><div className="technical-entry"><div className="technical-icon"><Box size={36}/></div><div><span className="eyebrow">DIGITAL EXHIBIT / ENGINEERING ARCHIVE</span><h3>探索机器人的内部系统</h3><p>交互 3D 样机、执行器结构、运动素材与完整技术资料。</p></div><a className="button ghost" href="?view=technical#digital-twin">进入技术展厅<ArrowUpRight size={17}/></a></div><details className="source-details"><summary>素材与模型归属说明</summary><p>机器人平台为 Berkeley Humanoid Lite。平台图片、运动素材及模型的归属与许可沿用项目技术资料；实物记录沿用本项目已有素材，不推断其采集时间或测试结果。3D 模型的归属与许可说明见 <a href={asset('humanoid/ATTRIBUTION.md')}>ATTRIBUTION.md</a>。</p></details></section>
+    <section className="section evidence-section" id="evidence"><Heading index="04" label="ENGINEERING EVIDENCE" title="工程实物与技术证据" text="已有装配记录用于说明工程对象，软件交互用于演示服务机制。照片不作为实时接入或性能验证的证明。"/><div className="evidence-grid">{evidence.map((e) => <button className="evidence-card" key={e[0]} onClick={event => { photoTrigger.current = event.currentTarget; setPhoto(e) }}><div className="evidence-image"><img src={asset(`media/project-evidence/${e[0]}-720.webp`)} alt={e[2]} srcSet={`${asset(`media/project-evidence/${e[0]}-720.webp`)} 720w, ${asset(`media/project-evidence/${e[0]}-1280.webp`)} 1280w`} sizes="(max-width: 650px) 90vw, (max-width: 1000px) 44vw, 30vw" loading="lazy" decoding="async" width="720" height="540"/><span>已有实物记录 <ArrowUpRight size={15}/></span></div><small>{e[1]}</small><h3>{e[2]}</h3><p>{e[3]}</p></button>)}</div><MotionEvidence/><div className="technical-entry"><div className="technical-icon"><Box size={36}/></div><div><span className="eyebrow">DIGITAL EXHIBIT / ENGINEERING ARCHIVE</span><h3>探索机器人的内部系统</h3><p>交互 3D 样机、执行器结构、运动素材与完整技术资料。</p></div><a className="button ghost" href="?view=technical#digital-twin">进入技术展厅<ArrowUpRight size={17}/></a></div><details className="source-details"><summary>素材与模型归属说明</summary><p>机器人平台为 Berkeley Humanoid Lite。页面中的三段实机动态记录由本项目提供；平台模型的归属与许可沿用项目技术资料。3D 模型的归属与许可说明见 <a href={asset('humanoid/ATTRIBUTION.md')}>ATTRIBUTION.md</a>。</p></details></section>
     <section className="section" id="outcomes"><Heading index="05" label="APPLICATION & VALUE" title="面向真实场景的持续服务" text="先讲透实验室场景，再以真实接入和验证数据推进教学、研发与设备运维应用。"/><div className="application-layout"><div className="case-tabs" role="group" aria-label="应用场景">{['实验室设备巡检', '教学与实训', '研发与设备运维'].map((title, i) => <button key={title} aria-pressed={useCase === i} className={useCase === i ? 'active' : ''} onClick={() => setUseCase(i)}><span>0{i + 1}</span>{title}<ArrowUpRight size={18}/></button>)}</div><article className="case-detail" key={useCase}><span className="pill">{caseInfo[3]}</span><h3>{caseInfo[1]}</h3><p>{caseInfo[2]}</p><div><span>服务价值</span><strong>{caseInfo[4]}</strong></div></article></div><div className="value-grid"><div><span>目标用户</span><h3>实验室 · 实训中心 · 研发团队</h3><p>围绕设备管理、调试与培训验证需求。</p></div><div><span>交付路径</span><h3>软件演示 → 实机适配 → 试点</h3><p>逐步补齐遥测、规则标定与服务端能力。</p></div><div><span>产业价值假设</span><h3>减少遗漏，提升维护可追溯性</h3><p>以对照实验验证收益，不预设商业数据。</p></div></div><div className="deliverables"><div><span className="eyebrow">PROJECT DELIVERABLES</span><h2>演示与项目成果</h2><p>技术报告覆盖问题背景、技术方案、创新设计、关键技术、应用场景、市场前景与产业价值。</p></div><div className="deliverable-links"><a href="?view=report"><FileText/><span><strong>项目技术报告</strong><small>在线阅读 · 打印 / 保存为 PDF</small></span><ArrowUpRight/></a><a href="https://github.com/Waitttforme/berkeley-humanoid-lite-intro" target="_blank" rel="noreferrer"><Box/><span><strong>项目代码与运行说明</strong><small>GitHub · 可运行软件成果</small></span><ArrowUpRight/></a><a href="#demo"><Play/><span><strong>现场演示与服务记录</strong><small>完整操作流程 · JSON 导出</small></span><ArrowUpRight/></a></div></div></section>
     </main><footer className="site-footer"><a className="brand" href="#overview"><span className="brand-symbol">H<span>·</span></span><span>HUMANOID<small>SMART SERVICE SYSTEM</small></span></a><p>人形机器人智慧运维与任务服务系统<br/><span>物联网 3S · 技术创新演示</span></p><a href="#overview">回到顶部 ↑</a></footer>
     <dialog className="photo-dialog" ref={dialog} onCancel={() => setPhoto(null)} onClose={() => { setPhoto(null); photoTrigger.current?.focus() }} onClick={e => { if (e.target === e.currentTarget) setPhoto(null) }}>{photo && <><button className="dialog-close" aria-label="关闭照片" onClick={() => setPhoto(null)}><X/></button><img src={asset(`media/project-evidence/${photo[0]}-1280.webp`)} alt={photo[2]}/><h3>{photo[2]}</h3><p>{photo[3]}</p></>}</dialog>

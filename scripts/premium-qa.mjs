@@ -31,6 +31,8 @@ async function inspectLayout(width, label = 'home') {
       const node = walker.currentNode
       const el = node.parentElement
       if (!node.textContent.trim() || !el || el.closest('svg, .hero-backword, .skip-link, [aria-hidden="true"]')) continue
+      const horizontalRail = el.closest('.motion-records')
+      if (horizontalRail && ['auto', 'scroll'].includes(getComputedStyle(horizontalRail).overflowX)) continue
       const range = document.createRange(); range.selectNodeContents(node)
       const rects = [...range.getClientRects()]
       if (!rects.length) continue
@@ -115,8 +117,9 @@ try {
   await page.screenshot({ path: 'preview-premium-desktop.png', fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })
   await page.screenshot({ path: 'preview-premium-mobile.png', fullPage: true })
-  assert.equal(await page.locator('.product-film, .film-frame, video').count(), 0)
-  passed.push('home motion-film section and player removed')
+  assert.equal(await page.locator('.product-film, .film-frame').count(), 0)
+  assert.equal(await page.locator('.motion-evidence video[preload="none"]').count(), 3)
+  passed.push('old motion-film removed; three poster-first self-owned motion records present')
   await page.goto(`${base}?view=report`, { waitUntil: 'networkidle' })
   for (const width of [320, 390, 768, 1024, 1440]) await inspectLayout(width, 'report')
   console.log('Layout inspection:', JSON.stringify(findings, null, 2))
