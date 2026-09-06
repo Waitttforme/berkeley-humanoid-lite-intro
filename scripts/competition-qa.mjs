@@ -26,6 +26,9 @@ try {
   await page.screenshot({ path: 'preview-3s-desktop.png', fullPage: true })
   await page.screenshot({ path: 'preview-3s-hero.png' })
   await overflow()
+  assert.equal(await page.getByText('项目代码与运行说明', { exact: true }).count(), 0)
+  assert.equal(await page.locator('.deliverable-links > a').count(), 2)
+  passed.push('public repository card removed; report and live demo deliverables retained')
   for (const id of ['thermal', 'can', 'pose']) {
     await page.locator('#scenario').selectOption(id)
     await click('启动巡检'); await phase('running')
