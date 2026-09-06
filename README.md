@@ -37,14 +37,14 @@ npm run qa:premium
 
 - `npm test`：验证服务状态机、故障复检和归档约束。
 - `qa:visual`：验证首屏模型、动作、结构展开、两类关节、服务流程和多尺寸布局。
-- `qa:technical`：验证 26 个模型网格、脚底锁定、暂停、重组和移动端交互。
+- `qa:technical`：验证原始模型实现、26 个模型网格、脚底锁定、重组和移动端交互。
 - `qa:premium`：验证字体渲染、文本裁切、响应式排版和动态效果降级。
 
 ## 主要目录
 
 ```text
 src/ModelStudio.jsx       首屏交互与动作控制界面
-src/StudioViewer.jsx      URDF/STL 加载、材质、动作和结构展开
+src/OriginalShowcaseSource.tsx  原首页模型、材质、动作和结构展开原始实现
 src/classmateMotion.ts    六组关节动作编排
 src/CompetitionApp.jsx    关节、架构、服务、实物与成果页面
 src/serviceEngine.js      智慧服务状态机与诊断规则

@@ -9,6 +9,20 @@
   top: 12%;
 }
 
+.main-showcase .twin-stage .viewer {
+  position: absolute;
+  z-index: 5;
+  inset: -3% -7%;
+  width: auto;
+  height: auto;
+  min-height: 0;
+  cursor: grab;
+}
+
+.main-showcase .twin-stage .viewer:active { cursor: grabbing; }
+.main-showcase .twin-stage .viewer canvas { width: 100%; height: 100%; display: block; }
+.main-showcase .twin-stage:has(.viewer canvas) .twin-poster { opacity: 0; }
+
 .main-showcase .twin-copy h1 {
   margin: 0;
   color: #f2f5f7;
