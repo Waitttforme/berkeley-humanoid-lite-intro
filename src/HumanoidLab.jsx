@@ -531,7 +531,7 @@ function Viewer({ motion, exploded, interactive, guideModule, setLoaded, setProg
     const loader = new URDFLoader(manager)
     loader.packages = () => MODEL_ROOT
     loader.parseCollision = false
-    loader.loadMeshCb = (meshPath, loadingManager, done) => {
+    loader.loadMeshCb = (meshPath, loadingManager, _material, done) => {
       const filename = meshPath.split('/').pop()?.split('\\').pop()
       if (!filename) {
         meshLoadFailed = true
@@ -551,7 +551,8 @@ function Viewer({ motion, exploded, interactive, guideModule, setLoaded, setProg
             return
           }
 
-          done(new THREE.Mesh(geometry, null))
+          // Three.js r185 no longer tolerates a null material during an early render frame.
+          done(new THREE.Mesh(geometry, _material || new THREE.MeshStandardMaterial()))
           loadedMeshCount += 1
           setProgress(Math.min(99, Math.round((loadedMeshCount / MODEL_MESH_COUNT) * 100)))
           completeModel()

@@ -1,10 +1,10 @@
-import React, { Suspense, useCallback, useState } from 'react'
+import React, { Suspense, useCallback, useRef, useState } from 'react'
 import './model-studio.css'
 
-const Viewer = React.lazy(() => import('./StudioViewer.jsx'))
+const Viewer = React.lazy(() => import('./OriginalShowcaseSource.tsx').then((module) => ({ default: module.Viewer })))
 const motions = [
   ['idle', '待机', 'IDLE'], ['wave', '招手', 'WAVE'], ['squat', '下蹲', 'SQUAT'],
-  ['walk', '步行', 'WALK'], ['combat', '姿态展示', 'POSE'], ['attention', '复位', 'RESET'],
+  ['combat', '姿态展示', 'POSE'], ['walk', '步行', 'WALK'], ['attention', '复位', 'RESET'],
 ]
 
 class ModelBoundary extends React.Component {
@@ -16,14 +16,11 @@ class ModelBoundary extends React.Component {
 export default function ModelStudio() {
   const [motion, setMotion] = useState('idle')
   const [exploded, setExploded] = useState(false)
-  const [paused, setPaused] = useState(false)
-  const [reset, setReset] = useState(0)
-  const [attempt, setAttempt] = useState(0)
   const [status, setStatus] = useState({ loaded: false, progress: 0 })
-  const update = useCallback((value) => setStatus((current) => ({ ...current, ...value })), [])
+  const viewerApi = useRef(null)
+  const setLoaded = useCallback((loaded) => setStatus({ loaded, progress: loaded ? 100 : 0 }), [])
   const activeMotion = motions.find(([id]) => id === motion)
-  const selectMotion = (id) => { setMotion(id); setExploded(false); setPaused(false) }
-  const retry = () => { setStatus({ loaded: false, progress: 0 }); setAttempt((value) => value + 1) }
+  const selectMotion = (id) => { setMotion(id); setExploded(false) }
 
   return <section className={`model-studio twin-showcase${exploded ? ' is-exploded' : ''}`} id="model-studio">
     <div className="twin-grid" aria-hidden="true" /><div className="twin-scan" aria-hidden="true" />
@@ -35,7 +32,7 @@ export default function ModelStudio() {
       <div className="twin-route" aria-label="物联网数据链"><span><i />感知</span><b>→</b><span><i />边缘</span><b>→</b><span><i />互联</span><b>→</b><span><i />服务</span></div>
       <div className="twin-actions">
         <button className="twin-primary" onClick={() => setExploded((value) => !value)}><span><small>{exploded ? 'ASSEMBLY PROTOCOL' : 'STRUCTURE SCAN'}</small><strong>{exploded ? '重新组装' : '探索结构'}</strong></span><i aria-hidden="true"><b>{exploded ? '↙' : '↗'}</b></i></button>
-        <button className="twin-icon-button" onClick={() => setReset((value) => value + 1)} aria-label="重置视角">◎</button>
+        <button className="twin-icon-button" onClick={() => viewerApi.current?.resetCamera()} aria-label="重置视角">◎</button>
       </div>
     </div>
     <div className="twin-stage">
@@ -45,16 +42,14 @@ export default function ModelStudio() {
       <div className="twin-reticle" aria-hidden="true"><i /><i /><i /><i /><b className="axis-x">X</b><b className="axis-y">Y</b><b className="axis-z">Z</b></div>
       <div className="twin-telemetry twin-telemetry-top"><span>EDGE GATEWAY / 3S-22</span><b>{exploded ? 'DEVICE TOPOLOGY VIEW' : '22 JOINT NODES READY'}</b></div>
       <div className="twin-telemetry twin-telemetry-bottom"><span>CAN0 + CAN1 / SERVICE LINK</span><b>{exploded ? 'ASSEMBLY EXPANDED' : 'DIGITAL MODEL ACTIVE'}</b></div>
-      <img className="twin-poster" src={`${import.meta.env.BASE_URL}media/classmate/bhl-engineering-hero.png`} alt="人形机器人数字样机" />
-      <ModelBoundary key={attempt}><Suspense fallback={null}><Viewer motion={motion} exploded={exploded} paused={paused} reset={reset} onState={update} /></Suspense></ModelBoundary>
-      {!status.loaded && !status.error && <div className="twin-loader" role="status"><span /><small>正在装配数字样机 · {status.progress}%</small></div>}
-      {status.error && <div className="twin-error" role="alert"><p>{status.error}</p><button onClick={retry}>重试加载</button></div>}
+      <img className={`twin-poster${status.loaded ? ' is-hidden' : ''}`} src={`${import.meta.env.BASE_URL}media/classmate/bhl-engineering-hero.png`} alt="人形机器人数字样机" />
+      <ModelBoundary><Suspense fallback={null}><Viewer motion={motion} exploded={exploded} setLoaded={setLoaded} apiRef={viewerApi} /></Suspense></ModelBoundary>
+      {!status.loaded && <div className="twin-loader" role="status"><span /><small>正在装配数字样机</small></div>}
       <div className="twin-model-caption"><span className="live-dot" /><div><small>FULL-BODY DIGITAL MODEL</small><strong>{exploded ? 'EXPLODED VIEW' : '22-DOF MOTION'}</strong></div></div>
       <div className="twin-interaction-hint"><span>↔</span><small>按住拖动旋转<br />双指操作模型</small></div>
     </div>
-    <div className="twin-motion-console" aria-label="数字样机动作控制台"><div className="twin-motion-head"><div><span className="live-dot" /><small>MOTION STUDIO</small></div><strong>{exploded ? 'ASSEMBLY EXPLODED' : `${activeMotion?.[2]} SEQUENCE`}</strong></div><div className="twin-motion-list">{motions.map(([id, label, code], index) => <button key={id} className={!exploded && motion === id ? 'is-active' : ''} disabled={!status.loaded || !!status.error} onClick={() => selectMotion(id)} aria-pressed={!exploded && motion === id}><i>{String(index + 1).padStart(2, '0')}</i><span>{label}<small>{code}</small></span></button>)}</div></div>
+    <div className="twin-motion-console" aria-label="数字样机动作控制台"><div className="twin-motion-head"><div><span className="live-dot" /><small>MOTION STUDIO</small></div><strong>{exploded ? 'ASSEMBLY EXPLODED' : `${activeMotion?.[2]} SEQUENCE`}</strong></div><div className="twin-motion-list">{motions.map(([id, label, code], index) => <button key={id} className={!exploded && motion === id ? 'is-active' : ''} disabled={!status.loaded} onClick={() => selectMotion(id)} aria-pressed={!exploded && motion === id}><i>{String(index + 1).padStart(2, '0')}</i><span>{label}<small>{code}</small></span></button>)}</div></div>
     <aside className="twin-specs" aria-label="数字样机参数"><div><strong>22</strong><span>可动关节<br />JOINTS</span></div><div><strong>26</strong><span>结构网格<br />MESHES</span></div><div><strong>6</strong><span>演示姿态<br />MOTIONS</span></div></aside>
-    <button className="twin-pause" disabled={!status.loaded} onClick={() => setPaused((value) => !value)}>{paused ? '继续动作' : '暂停动作'}</button>
     <p className="twin-boundary">程序化姿态与结构拆解演示 · 非实机遥测或物理性能验证</p>
   </section>
 }
