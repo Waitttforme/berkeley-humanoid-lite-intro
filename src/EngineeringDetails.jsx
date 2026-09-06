@@ -2,14 +2,13 @@ import React, { useState } from 'react'
 import { ArrowDown, ArrowUpRight, Check, ChevronRight, ScanLine, Layers3, SlidersHorizontal, CircleCheck, Cable } from 'lucide-react'
 import './engineering.css'
 
-const docs = 'https://berkeley-humanoid-lite.gitbook.io/docs/'
 export const technicalSources = {
   paper: 'https://arxiv.org/html/2504.17249v1',
-  foc: `${docs}in-depth-contents/field-oriented-control-foc-operation`,
-  timing: `${docs}in-depth-contents/motor-controller-firmware-execution-timing-information`,
-  onboard: `${docs}getting-started-with-software/the-on-board-computer`,
-  packages: `${docs}getting-started-with-software/software-development-environment-overview`,
-  sim: `${docs}getting-started-with-software/sim2sim-validation`,
+  foc: '#solution',
+  timing: '#solution',
+  onboard: '#solution',
+  packages: '#solution',
+  sim: '#solution',
 }
 const layerDetails = [
   {

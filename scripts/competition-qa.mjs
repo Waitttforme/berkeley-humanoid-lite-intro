@@ -10,7 +10,7 @@ if (!base) {
   server = await preview({ logLevel: 'silent', preview: { host: '127.0.0.1', port: 4175, strictPort: true } })
   base = 'http://127.0.0.1:4175/berkeley-humanoid-lite-intro/'
 }
-const browser = await chromium.launch({ executablePath: process.env.BHL_CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe', headless: true })
+const browser = await chromium.launch({ executablePath: process.env.BHL_CHROME_PATH || 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe', headless: true })
 const errors = []
 const passed = []
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' })
@@ -23,6 +23,20 @@ const overflow = async () => assert.ok(await page.evaluate(() => document.docume
 try {
   const response = await page.goto(base, { waitUntil: 'networkidle' })
   assert.equal(response.status(), 200)
+  await page.waitForFunction(() => document.querySelector('.studio-canvas')?.dataset.loaded === 'true', null, { timeout: 120000 })
+  assert.ok(await page.locator('.main-showcase h1').isVisible())
+  assert.equal(await page.locator('.actuator-model-card').count(), 2)
+  assert.equal(/berkeley|开源/i.test(await page.locator('body').innerText()), false)
+  for (const [id, label] of [['wave', '招手'], ['squat', '下蹲'], ['walk', '步行'], ['combat', '战斗'], ['attention', '立正']]) {
+    await page.locator('.twin-motion-list').getByRole('button', { name: new RegExp(label) }).click()
+    await page.waitForFunction(value => document.querySelector('.studio-canvas')?.dataset.motion === value, id)
+  }
+  await page.getByRole('button', { name: /探索结构/ }).click()
+  await page.waitForFunction(() => document.querySelector('.studio-canvas')?.dataset.exploded === 'true')
+  await page.waitForFunction(() => Number(document.querySelector('.studio-canvas')?.dataset.explosionSpread) > .2)
+  await page.getByRole('button', { name: /重新组装/ }).click()
+  await page.waitForFunction(() => document.querySelector('.studio-canvas')?.dataset.exploded === 'false')
+  passed.push('homepage 3D model: six motions, explode/reassemble, two actuator models, forbidden wording absent')
   await page.screenshot({ path: 'preview-3s-desktop.png', fullPage: true })
   await page.screenshot({ path: 'preview-3s-hero.png' })
   await overflow()
@@ -91,18 +105,16 @@ try {
   }
   await page.goto(`${base}?view=report`, { waitUntil: 'networkidle' })
   assert.equal(await page.locator('.report-page section').count(), 10)
+  assert.equal(/berkeley|开源/i.test(await page.locator('body').innerText()), false)
   await page.emulateMedia({ media: 'print' })
   assert.equal(await page.locator('.report-tools').isVisible(), false)
   await page.emulateMedia({ media: 'screen' })
   await overflow()
   passed.push('technical report: all sections, print layout, mobile')
   await page.goto(`${base}?view=technical`, { waitUntil: 'networkidle' })
-  assert.ok(await page.getByRole('link', { name: '← 返回 3S 智慧服务首页' }).isVisible())
-  assert.ok(await page.locator('h1').isVisible())
-  await page.getByRole('link', { name: '← 返回 3S 智慧服务首页' }).click()
-  await page.locator('.hero-copy h1').waitFor({ state: 'visible' })
-  assert.ok(await page.locator('.hero-copy h1').isVisible())
-  passed.push('retained technical exhibition and return navigation')
+  await page.locator('.main-showcase h1').waitFor({ state: 'visible' })
+  assert.equal(/berkeley|开源/i.test(await page.locator('body').innerText()), false)
+  passed.push('legacy technical query resolves to the unified homepage')
   assert.deepEqual(errors, [])
   console.log(JSON.stringify({ base, passed, errors }, null, 2))
 } finally {

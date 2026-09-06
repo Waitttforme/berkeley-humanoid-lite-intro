@@ -4,7 +4,7 @@ import './model-studio.css'
 const Viewer = React.lazy(() => import('./StudioViewer.jsx'))
 const motions = [
   ['idle', '待机', 'IDLE'], ['wave', '招手', 'WAVE'], ['squat', '下蹲', 'SQUAT'],
-  ['walk', '步行', 'WALK'], ['combat', '姿态展示', 'POSE'], ['attention', '复位', 'RESET'],
+  ['combat', '战斗', 'COMBAT'], ['walk', '步行', 'WALK'], ['attention', '立正', 'RESET'],
 ]
 
 class ModelBoundary extends React.Component {
@@ -25,13 +25,13 @@ export default function ModelStudio() {
   const selectMotion = (id) => { setMotion(id); setExploded(false); setPaused(false) }
   const retry = () => { setStatus({ loaded: false, progress: 0 }); setAttempt((value) => value + 1) }
 
-  return <section className={`model-studio twin-showcase${exploded ? ' is-exploded' : ''}`} id="model-studio">
+  return <section className={`model-studio twin-showcase main-showcase${exploded ? ' is-exploded' : ''}`} id="overview">
     <div className="twin-grid" aria-hidden="true" /><div className="twin-scan" aria-hidden="true" />
-    <div className="twin-side-index" aria-hidden="true"><b>02</b><span>DIGITAL<br />TWIN</span><i /></div>
+    <div className="twin-side-index" aria-hidden="true"><b>3S</b><span>DIGITAL<br />SYSTEM</span><i /></div>
     <div className="twin-copy">
-      <div className="twin-eyebrow"><span /> 交互数字样机 · 3S</div>
-      <h2>让结构<br /><em>真正可见</em></h2>
-      <p>旋转观察整机结构，切换关节姿态，展开全部零件。用一台可交互数字样机理解机器人如何成为物联网终端。</p>
+      <div className="twin-eyebrow"><span /> 3S 人形物联网服务系统</div>
+      <h1>感知世界<br /><em>连接行动</em></h1>
+      <p>在首屏直接操控 22 关节数字机器人。旋转观察、切换动作或展开全部主要零件，从结构进入感知、连接与服务。</p>
       <div className="twin-route" aria-label="物联网数据链"><span><i />感知</span><b>→</b><span><i />边缘</span><b>→</b><span><i />互联</span><b>→</b><span><i />服务</span></div>
       <div className="twin-actions">
         <button className="twin-primary" onClick={() => setExploded((value) => !value)}><span><small>{exploded ? 'ASSEMBLY PROTOCOL' : 'STRUCTURE SCAN'}</small><strong>{exploded ? '重新组装' : '探索结构'}</strong></span><i aria-hidden="true"><b>{exploded ? '↙' : '↗'}</b></i></button>
@@ -55,6 +55,6 @@ export default function ModelStudio() {
     <div className="twin-motion-console" aria-label="数字样机动作控制台"><div className="twin-motion-head"><div><span className="live-dot" /><small>MOTION STUDIO</small></div><strong>{exploded ? 'ASSEMBLY EXPLODED' : `${activeMotion?.[2]} SEQUENCE`}</strong></div><div className="twin-motion-list">{motions.map(([id, label, code], index) => <button key={id} className={!exploded && motion === id ? 'is-active' : ''} disabled={!status.loaded || !!status.error} onClick={() => selectMotion(id)} aria-pressed={!exploded && motion === id}><i>{String(index + 1).padStart(2, '0')}</i><span>{label}<small>{code}</small></span></button>)}</div></div>
     <aside className="twin-specs" aria-label="数字样机参数"><div><strong>22</strong><span>可动关节<br />JOINTS</span></div><div><strong>26</strong><span>结构网格<br />MESHES</span></div><div><strong>6</strong><span>演示姿态<br />MOTIONS</span></div></aside>
     <button className="twin-pause" disabled={!status.loaded} onClick={() => setPaused((value) => !value)}>{paused ? '继续动作' : '暂停动作'}</button>
-    <p className="twin-boundary">程序化姿态与结构拆解演示 · 非实机遥测或物理性能验证</p>
+    <p className="twin-boundary">交互式结构与动作演示 · 22 个关节节点</p>
   </section>
 }
