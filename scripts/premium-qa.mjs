@@ -16,6 +16,7 @@ if (!base) {
   base = 'http://127.0.0.1:4177/berkeley-humanoid-lite-intro/'
 }
 const browser = await chromium.launch({ executablePath: process.env.BHL_CHROME_PATH || 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe', headless: true })
+const withView = view => { const url = new URL(base); url.searchParams.set('view', view); return url.href }
 const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' })
 page.on('pageerror', e => errors.push(e.message))
 page.on('console', m => { if (m.type() === 'error') errors.push(m.text()) })
@@ -117,7 +118,7 @@ try {
   await page.screenshot({ path: 'preview-premium-mobile.png', fullPage: true })
   assert.equal(await page.locator('.product-film, .film-frame, video').count(), 0)
   passed.push('home motion-film section and player removed')
-  await page.goto(`${base}?view=report`, { waitUntil: 'networkidle' })
+  await page.goto(withView('report'), { waitUntil: 'networkidle' })
   for (const width of [320, 390, 768, 1024, 1440]) await inspectLayout(width, 'report')
   console.log('Layout inspection:', JSON.stringify(findings, null, 2))
   await page.getByRole('link', { name: '← 返回展厅' }).click()

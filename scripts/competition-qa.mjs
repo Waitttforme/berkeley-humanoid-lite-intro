@@ -20,6 +20,7 @@ page.on('response', r => { if (r.status() >= 400) errors.push(`${r.status()} ${r
 const click = text => page.getByRole('button', { name: text, exact: true }).click()
 const phase = async expected => { await page.waitForFunction(p => document.querySelector('#service-console')?.dataset.phase === p, expected) }
 const overflow = async () => assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'viewport must not overflow')
+const withView = view => { const url = new URL(base); url.searchParams.set('view', view); return url.href }
 try {
   const response = await page.goto(base, { waitUntil: 'networkidle' })
   assert.equal(response.status(), 200)
@@ -103,7 +104,7 @@ try {
     }
     passed.push(`${width}px viewport: no horizontal overflow`)
   }
-  await page.goto(`${base}?view=report`, { waitUntil: 'networkidle' })
+  await page.goto(withView('report'), { waitUntil: 'networkidle' })
   assert.equal(await page.locator('.report-page section').count(), 10)
   assert.equal(/berkeley|开源/i.test(await page.locator('body').innerText()), false)
   await page.emulateMedia({ media: 'print' })
@@ -111,7 +112,7 @@ try {
   await page.emulateMedia({ media: 'screen' })
   await overflow()
   passed.push('technical report: all sections, print layout, mobile')
-  await page.goto(`${base}?view=technical`, { waitUntil: 'networkidle' })
+  await page.goto(withView('technical'), { waitUntil: 'networkidle' })
   await page.locator('.main-showcase h1').waitFor({ state: 'visible' })
   assert.equal(/berkeley|开源/i.test(await page.locator('body').innerText()), false)
   passed.push('legacy technical query resolves to the unified homepage')
