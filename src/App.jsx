@@ -1,11 +1,10 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   Activity,
   ArrowDown,
   ArrowRight,
   Check,
   ChevronDown,
-  CirclePlay,
   CircuitBoard,
   ClipboardCheck,
   Copy,
@@ -80,18 +79,6 @@ const navItems = [
   { id: 'capabilities', label: '实机证据', code: '05' },
   { id: 'design', label: '系统解剖', code: '06' },
   { id: 'stack', label: '开放栈', code: '07' },
-]
-
-const PRESENTATION_STEP_MS = 7_500
-
-const presentationSteps = [
-  { id: 'robot', code: '01', label: '平台定位', note: '从人形机器人进入物联网系统' },
-  { id: 'iot-showcase', code: '02', label: '信号链路', note: '感知、控制、总线、边缘与展示' },
-  { id: 'smart-service', code: '03', label: '智慧服务', note: '感知、诊断、决策、工单与复检闭环' },
-  { id: 'digital-twin', code: '04', label: '数字展品', note: '官方 URDF 与分件网格在浏览器本地组装' },
-  { id: 'capabilities', code: '05', label: '实机证据', note: '用官方实验素材证明平台能力' },
-  { id: 'design', code: '06', label: '系统解剖', note: '结构、真实执行器与可重构形态' },
-  { id: 'stack', code: '07', label: '开放软件栈', note: '从 CAD、固件到仿真和实机' },
 ]
 
 const heroMetrics = [
@@ -1117,37 +1104,6 @@ function SmartServiceConsole({ showcaseMode = false }) {
   )
 }
 
-function PresentationDock({ active, paused, complete, stepIndex, onToggle, onNext, onReplay, onExit }) {
-  if (!active) return null
-  const step = presentationSteps[stepIndex]
-
-  return (
-    <aside
-      className={`presentation-dock ${paused ? 'is-paused' : ''} ${complete ? 'is-complete' : ''}`}
-      data-step={step.id}
-      aria-label="比赛展演控制"
-    >
-      <div className="presentation-dock__status">
-        <span><i /> {complete ? 'EXHIBITION COMPLETE' : 'COMPETITION SHOWCASE'}</span>
-        <strong>{complete ? `${String(presentationSteps.length).padStart(2, '0')} / 展演完成` : `${step.code} / ${step.label}`}</strong>
-        <small>{complete ? '七章系统展演已完成' : step.note}</small>
-      </div>
-      <div className="presentation-dock__steps" aria-hidden="true">
-        {presentationSteps.map((item, index) => (
-          <i key={item.id} className={index === stepIndex ? 'is-active' : index < stepIndex ? 'is-done' : ''} />
-        ))}
-      </div>
-      <div className="presentation-dock__actions">
-        <button type="button" onClick={complete ? onReplay : onToggle} aria-label={complete ? '重新播放比赛展演' : paused ? '继续自动展演' : '暂停自动展演'}>
-          {complete ? <RotateCcw size={16} /> : paused ? <Play size={16} /> : <Pause size={16} />}
-        </button>
-        <button type="button" onClick={onNext} aria-label="进入下一个展演章节" disabled={complete}><ArrowRight size={17} /></button>
-        <button type="button" onClick={onExit} aria-label="退出比赛展演"><X size={17} /></button>
-      </div>
-    </aside>
-  )
-}
-
 function LazyHumanoidLab({ showcaseMode = false, forceMount = false }) {
   const hostRef = useRef(null)
   const [shouldMount, setShouldMount] = useState(false)
@@ -1209,20 +1165,8 @@ function App() {
   const [activeStack, setActiveStack] = useState(0)
   const [activeIoT, setActiveIoT] = useState(0)
   const [activeMorph, setActiveMorph] = useState('biped')
-  const [presentationActive, setPresentationActive] = useState(false)
-  const [presentationPaused, setPresentationPaused] = useState(false)
-  const [presentationComplete, setPresentationComplete] = useState(false)
-  const [presentationIndex, setPresentationIndex] = useState(0)
   const menuRef = useRef(null)
   const menuButtonRef = useRef(null)
-  const pendingPresentationRestoreRef = useRef(null)
-
-  useLayoutEffect(() => {
-    if (presentationActive || !pendingPresentationRestoreRef.current) return
-    const restoreId = pendingPresentationRestoreRef.current
-    pendingPresentationRestoreRef.current = null
-    document.getElementById(restoreId)?.scrollIntoView({ behavior: 'auto', block: 'start' })
-  }, [presentationActive])
 
   useEffect(() => {
     const revealObserver = new IntersectionObserver(
@@ -1242,7 +1186,7 @@ function App() {
       }),
       { rootMargin: '-35% 0px -55% 0px', threshold: 0 },
     )
-    presentationSteps.forEach(({ id }) => {
+    navItems.forEach(({ id }) => {
       const element = document.getElementById(id)
       if (element) sectionObserver.observe(element)
     })
@@ -1256,13 +1200,6 @@ function App() {
   useEffect(() => {
     const onKeyDown = (event) => {
       if (event.key === 'Escape') {
-        if (presentationActive) {
-          pendingPresentationRestoreRef.current = presentationSteps[presentationIndex]?.id
-          setPresentationActive(false)
-          setPresentationPaused(false)
-          setPresentationComplete(false)
-          return
-        }
         if (menuOpen) {
           setMenuOpen(false)
           menuButtonRef.current?.focus()
@@ -1271,68 +1208,7 @@ function App() {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [menuOpen, presentationActive, presentationIndex])
-
-  useEffect(() => {
-    if (!presentationActive) return undefined
-    const step = presentationSteps[presentationIndex]
-    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-    window.requestAnimationFrame(() => {
-      document.getElementById(step.id)?.scrollIntoView({ behavior, block: 'start' })
-    })
-
-    if (presentationPaused || presentationComplete) return undefined
-    const timer = window.setTimeout(() => {
-      if (presentationIndex >= presentationSteps.length - 1) {
-        setPresentationComplete(true)
-        setPresentationPaused(true)
-      } else {
-        setPresentationIndex((current) => current + 1)
-      }
-    }, PRESENTATION_STEP_MS)
-    return () => window.clearTimeout(timer)
-  }, [presentationActive, presentationComplete, presentationIndex, presentationPaused])
-
-  useEffect(() => {
-    if (!presentationActive || presentationPaused) return undefined
-    if (presentationSteps[presentationIndex].id !== 'iot-showcase') return undefined
-    setActiveIoT(0)
-    const timer = window.setInterval(() => {
-      setActiveIoT((current) => Math.min(current + 1, iotLayers.length - 1))
-    }, 1400)
-    return () => window.clearInterval(timer)
-  }, [presentationActive, presentationIndex, presentationPaused])
-
-  useEffect(() => {
-    if (!presentationActive || presentationPaused) return undefined
-    if (presentationSteps[presentationIndex].id !== 'design') return undefined
-    setActivePart(0)
-    const timer = window.setInterval(() => {
-      setActivePart((current) => Math.min(current + 1, anatomyParts.length - 1))
-    }, 600)
-    return () => window.clearInterval(timer)
-  }, [presentationActive, presentationIndex, presentationPaused])
-
-  useEffect(() => {
-    if (!presentationActive || presentationPaused) return undefined
-    if (presentationSteps[presentationIndex].id !== 'design') return undefined
-    const behavior = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'
-    const timers = [
-      window.setTimeout(() => document.getElementById('actuator')?.scrollIntoView({ behavior, block: 'start' }), 2500),
-      window.setTimeout(() => document.getElementById('morphology')?.scrollIntoView({ behavior, block: 'start' }), 5000),
-    ]
-    return () => timers.forEach((timer) => window.clearTimeout(timer))
-  }, [presentationActive, presentationIndex, presentationPaused])
-
-  useEffect(() => {
-    if (!presentationActive || presentationPaused) return undefined
-    if (presentationSteps[presentationIndex].id !== 'stack') return undefined
-    setActiveStack(0)
-    const timer = window.setInterval(() => {
-      setActiveStack((current) => Math.min(current + 1, stackNodes.length - 1))
-    }, 1400)
-    return () => window.clearInterval(timer)
-  }, [presentationActive, presentationIndex, presentationPaused])
+  }, [menuOpen])
 
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
@@ -1351,40 +1227,9 @@ function App() {
     window.requestAnimationFrame(() => menuRef.current?.querySelector('button')?.focus())
   }
 
-  const startPresentation = () => {
-    setMenuOpen(false)
-    setPresentationIndex(0)
-    setPresentationPaused(false)
-    setPresentationComplete(false)
-    setPresentationActive(true)
-  }
-
-  const replayPresentation = () => {
-    setPresentationIndex(0)
-    setPresentationPaused(false)
-    setPresentationComplete(false)
-  }
-
-  const nextPresentationStep = () => {
-    if (presentationIndex >= presentationSteps.length - 1) {
-      setPresentationComplete(true)
-      setPresentationPaused(true)
-      return
-    }
-    setPresentationIndex((current) => current + 1)
-  }
-
-  const exitPresentation = () => {
-    pendingPresentationRestoreRef.current = presentationSteps[presentationIndex]?.id
-    setPresentationActive(false)
-    setPresentationPaused(false)
-    setPresentationComplete(false)
-  }
-
   const activeStackNode = stackNodes[activeStack]
   const activeMorphology = morphologies.find((item) => item.id === activeMorph)
-  const presentationStep = presentationSteps[presentationIndex]
-  const observedPresentationSectionIndex = presentationSteps.findIndex((item) => item.id === activeSection)
+  const observedPresentationSectionIndex = navItems.findIndex((item) => item.id === activeSection)
   const activePresentationSectionIndex = observedPresentationSectionIndex < 0
     ? 0
     : observedPresentationSectionIndex
@@ -1397,7 +1242,7 @@ function App() {
       <aside className="signal-spine" aria-hidden="true">
         <span>SIGNAL / 22</span>
         <div>
-          {presentationSteps.map((step, index) => (
+          {navItems.map((step, index) => (
             <i
               className={index === activePresentationSectionIndex ? 'is-active' : index < activePresentationSectionIndex ? 'is-past' : ''}
               key={step.id}
@@ -1430,9 +1275,6 @@ function App() {
         </nav>
 
         <div className="site-header__actions">
-          <button className="header-showcase" type="button" onClick={startPresentation}>
-            <CirclePlay size={14} /> SHOWCASE
-          </button>
           <a href={LINKS.docs} target="_blank" rel="noreferrer">DOCS <ExternalLink size={13} /></a>
           <a className="header-github" href={LINKS.github} target="_blank" rel="noreferrer" aria-label="打开 GitHub 仓库"><Github size={18} /></a>
           <button
@@ -1461,8 +1303,8 @@ function App() {
             </h1>
             <p>从关节编码器与机身 IMU，到 STM32G431、4 × CAN 2.0 与 Intel N95。把一台开源人形机器人的本地物联闭环，拆开给你看。</p>
             <div className="hero__actions">
-              <button className="primary-action" type="button" onClick={startPresentation}>
-                <CirclePlay size={18} /> 观看约 55 秒系统展演 <ArrowRight size={16} />
+              <button className="primary-action" type="button" onClick={() => scrollTo('iot-showcase')}>
+                查看物联网信号链路 <ArrowRight size={16} />
               </button>
               <button className="text-action" type="button" onClick={() => scrollTo('digital-twin')}>
                 进入 3D 结构 <ArrowDown size={16} />
@@ -1535,9 +1377,7 @@ function App() {
               title={<>不止看见状态，<br /><span className="balanced-title-line"><span>还要完成</span><span>服务闭环。</span></span></>}
               copy="选择一种运行场景，系统会在浏览器本地生成可复现的演示数据，依次完成多源感知、规则诊断、风险分级、服务决策、处置记录与复检归档。"
             />
-            <SmartServiceConsole
-              showcaseMode={presentationActive && presentationStep.id === 'smart-service' && !presentationPaused}
-            />
+            <SmartServiceConsole />
           </div>
         </section>
 
@@ -1562,10 +1402,7 @@ function App() {
               <i />
               <div><small>RUNTIME</small><strong>THREE.JS</strong><span>本地渲染 / 程序化动作</span></div>
             </div>
-            <LazyHumanoidLab
-              forceMount={presentationActive}
-              showcaseMode={presentationActive && presentationStep.id === 'digital-twin' && !presentationPaused}
-            />
+            <LazyHumanoidLab />
           </div>
         </section>
 
@@ -1790,17 +1627,6 @@ function App() {
         </section>
 
       </main>
-
-      <PresentationDock
-        active={presentationActive}
-        paused={presentationPaused}
-        complete={presentationComplete}
-        stepIndex={presentationIndex}
-        onToggle={() => setPresentationPaused((current) => !current)}
-        onNext={nextPresentationStep}
-        onReplay={replayPresentation}
-        onExit={exitPresentation}
-      />
 
       <footer className="site-footer">
         <div className="page-frame site-footer__inner">

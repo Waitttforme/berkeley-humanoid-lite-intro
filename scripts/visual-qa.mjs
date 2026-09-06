@@ -337,108 +337,12 @@ const truthLabels = await page.evaluate(() => {
   }
 })
 
-const showcaseButton = page.locator('.header-showcase')
-const showcaseButtonText = await showcaseButton.textContent()
-await showcaseButton.click()
-const showcaseDock = page.getByRole('complementary', { name: '比赛展演控制' })
-await showcaseDock.waitFor({ state: 'visible' })
-await page.waitForFunction(
-  () => document.querySelector('.presentation-dock__status strong')?.textContent?.includes('01 / 平台定位'),
-)
-const showcaseStarted = await page.evaluate(() => ({
-  status: document.querySelector('.presentation-dock__status strong')?.textContent?.trim(),
-  note: document.querySelector('.presentation-dock__status small')?.textContent?.trim(),
-  paused: document.querySelector('.presentation-dock')?.classList.contains('is-paused'),
-  activeStepCount: document.querySelectorAll('.presentation-dock__steps .is-active').length,
-  doneStepCount: document.querySelectorAll('.presentation-dock__steps .is-done').length,
-  totalStepCount: document.querySelectorAll('.presentation-dock__steps i').length,
-  actionCount: document.querySelectorAll('.presentation-dock__actions button').length,
+const showcaseRemoved = await page.evaluate(() => ({
+  dockCount: document.querySelectorAll('.presentation-dock').length,
+  headerButtonCount: document.querySelectorAll('.header-showcase').length,
+  textPresent: document.body.textContent?.includes('55 秒系统展演') ?? false,
+  manualEntryPresent: [...document.querySelectorAll('button')].some((button) => button.textContent?.includes('查看物联网信号链路')),
 }))
-await page.screenshot({ path: 'preview-showcase.png', fullPage: false })
-
-await page.getByRole('button', { name: '暂停自动展演' }).click()
-await page.waitForFunction(
-  () => document.querySelector('.presentation-dock')?.classList.contains('is-paused')
-    && document.querySelector('.presentation-dock__actions button')?.getAttribute('aria-label') === '继续自动展演',
-)
-const showcasePaused = await page.evaluate(() => ({
-  status: document.querySelector('.presentation-dock__status strong')?.textContent?.trim(),
-  paused: document.querySelector('.presentation-dock')?.classList.contains('is-paused'),
-  toggleLabel: document.querySelector('.presentation-dock__actions button')?.getAttribute('aria-label'),
-}))
-
-await page.getByRole('button', { name: '继续自动展演' }).click()
-await page.waitForFunction(
-  () => !document.querySelector('.presentation-dock')?.classList.contains('is-paused')
-    && document.querySelector('.presentation-dock__actions button')?.getAttribute('aria-label') === '暂停自动展演',
-)
-const showcaseContinued = await page.evaluate(() => ({
-  status: document.querySelector('.presentation-dock__status strong')?.textContent?.trim(),
-  paused: document.querySelector('.presentation-dock')?.classList.contains('is-paused'),
-  toggleLabel: document.querySelector('.presentation-dock__actions button')?.getAttribute('aria-label'),
-}))
-
-await page.getByRole('button', { name: '暂停自动展演' }).click()
-await page.waitForFunction(
-  () => document.querySelector('.presentation-dock')?.classList.contains('is-paused'),
-)
-await page.getByRole('button', { name: '进入下一个展演章节' }).click()
-await page.waitForFunction(
-  () => document.querySelector('.presentation-dock__status strong')?.textContent?.includes('02 / 信号链路'),
-)
-const showcaseNext = await page.evaluate(() => ({
-  status: document.querySelector('.presentation-dock__status strong')?.textContent?.trim(),
-  paused: document.querySelector('.presentation-dock')?.classList.contains('is-paused'),
-  activeStepCount: document.querySelectorAll('.presentation-dock__steps .is-active').length,
-  doneStepCount: document.querySelectorAll('.presentation-dock__steps .is-done').length,
-}))
-
-await page.screenshot({ path: 'preview-showcase-02.png', fullPage: false })
-for (let targetIndex = 2; targetIndex < 7; targetIndex += 1) {
-  await page.getByRole('button', { name: '进入下一个展演章节' }).click()
-  await page.waitForFunction(
-    (expectedIndex) => document.querySelectorAll('.presentation-dock__steps .is-done').length === expectedIndex,
-    targetIndex,
-  )
-  await page.waitForTimeout(700)
-  await page.screenshot({ path: `preview-showcase-${String(targetIndex + 1).padStart(2, '0')}.png`, fullPage: false })
-}
-
-await page.getByRole('button', { name: '继续自动展演' }).click()
-await page.waitForFunction(
-  () => document.querySelector('.presentation-dock')?.classList.contains('is-complete'),
-  undefined,
-  { timeout: 10_000 },
-)
-const showcaseComplete = await page.evaluate(() => ({
-  status: document.querySelector('.presentation-dock__status strong')?.textContent?.trim(),
-  complete: document.querySelector('.presentation-dock')?.classList.contains('is-complete'),
-  replayLabel: document.querySelector('.presentation-dock__actions button')?.getAttribute('aria-label'),
-  nextDisabled: document.querySelectorAll('.presentation-dock__actions button')[1]?.disabled,
-  stackTop: Math.round(document.getElementById('stack')?.getBoundingClientRect().top ?? -1),
-}))
-await page.screenshot({ path: 'preview-showcase-complete.png', fullPage: false })
-
-await page.getByRole('button', { name: '重新播放比赛展演' }).click()
-await page.waitForFunction(
-  () => document.querySelector('.presentation-dock__status strong')?.textContent?.includes('01 / 平台定位')
-    && !document.querySelector('.presentation-dock')?.classList.contains('is-complete'),
-)
-const showcaseReplayed = await page.evaluate(() => ({
-  status: document.querySelector('.presentation-dock__status strong')?.textContent?.trim(),
-  complete: document.querySelector('.presentation-dock')?.classList.contains('is-complete'),
-  paused: document.querySelector('.presentation-dock')?.classList.contains('is-paused'),
-}))
-
-await page.getByRole('button', { name: '退出比赛展演' }).click()
-await showcaseDock.waitFor({ state: 'detached' })
-const showcaseExited = await page.locator('.presentation-dock').count() === 0
-
-await showcaseButton.click()
-await showcaseDock.waitFor({ state: 'visible' })
-await page.keyboard.press('Escape')
-await showcaseDock.waitFor({ state: 'detached' })
-const showcaseEscapeExited = await page.locator('.presentation-dock').count() === 0
 
 const desktopReport = await page.evaluate(() => ({
   title: document.title,
@@ -630,34 +534,10 @@ const assertions = {
     && truthLabels.smartService.text?.includes('浏览器本地模拟数据')
     && truthLabels.smartService.text?.includes('不连接实机')
     && truthLabels.smartService.text?.includes('NO REAL WORK ORDER'),
-  showcaseStartsInOneClick: showcaseButtonText?.includes('SHOWCASE')
-    && showcaseStarted.status?.includes('01 / 平台定位')
-    && showcaseStarted.paused === false
-    && showcaseStarted.activeStepCount === 1
-    && showcaseStarted.doneStepCount === 0
-    && showcaseStarted.totalStepCount === 7
-    && showcaseStarted.actionCount === 3,
-  showcasePauses: showcasePaused.status?.includes('01 / 平台定位')
-    && showcasePaused.paused === true
-    && showcasePaused.toggleLabel === '继续自动展演',
-  showcaseContinues: showcaseContinued.status?.includes('01 / 平台定位')
-    && showcaseContinued.paused === false
-    && showcaseContinued.toggleLabel === '暂停自动展演',
-  showcaseAdvancesChapter: showcaseNext.status?.includes('02 / 信号链路')
-    && showcaseNext.paused === true
-    && showcaseNext.activeStepCount === 1
-    && showcaseNext.doneStepCount === 1,
-  showcaseCompletesWithoutAutoExit: showcaseComplete.status?.includes('07 / 展演完成')
-    && showcaseComplete.complete === true
-    && showcaseComplete.replayLabel === '重新播放比赛展演'
-    && showcaseComplete.nextDisabled === true
-    && showcaseComplete.stackTop >= 0
-    && showcaseComplete.stackTop < 140,
-  showcaseReplayWorks: showcaseReplayed.status?.includes('01 / 平台定位')
-    && showcaseReplayed.complete === false
-    && showcaseReplayed.paused === false,
-  showcaseExitButtonWorks: showcaseExited === true,
-  showcaseEscapeWorks: showcaseEscapeExited === true,
+  automaticShowcaseRemoved: showcaseRemoved.dockCount === 0
+    && showcaseRemoved.headerButtonCount === 0
+    && showcaseRemoved.textPresent === false
+    && showcaseRemoved.manualEntryPresent === true,
   desktopHasNoHorizontalOverflow: Math.max(desktopReport.bodyWidth, desktopReport.documentWidth) <= desktopReport.viewportWidth,
   mobileHasNoHorizontalOverflow: Math.max(mobileReport.bodyWidth, mobileReport.documentWidth) <= mobileReport.viewportWidth,
   mobileUsesDeferredModelPoster: mobileGateReport.loadedBeforeActivation === 'false'
@@ -715,15 +595,7 @@ console.log(JSON.stringify({
     iotTabCount,
     iotLayerStates,
     truthLabels,
-    showcaseButtonText,
-    showcaseStarted,
-    showcasePaused,
-    showcaseContinued,
-    showcaseNext,
-    showcaseComplete,
-    showcaseReplayed,
-    showcaseExited,
-    showcaseEscapeExited,
+    showcaseRemoved,
     mobileInteractionInitial,
     mobileInteractionActive,
     mobileInteractionExited,
