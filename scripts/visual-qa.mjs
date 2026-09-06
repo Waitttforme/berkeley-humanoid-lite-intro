@@ -21,14 +21,6 @@ const SERVICE_SCENARIO_EXPECTATIONS = [
   { id: 'can', label: 'CAN 波动', terminal: 'diagnosed', diagnosis: '通信丢包触发支路异常' },
   { id: 'pose', label: '姿态偏移', terminal: 'diagnosed', diagnosis: '机身倾角触发稳定性风险' },
 ]
-const GUIDE_EXPECTATIONS = [
-  { id: 'core', label: '核心机身', focus: 'FOCUS / CORE' },
-  { id: 'leftArm', label: '左臂', focus: 'FOCUS / LEFTARM' },
-  { id: 'rightArm', label: '右臂', focus: 'FOCUS / RIGHTARM' },
-  { id: 'leftLeg', label: '左腿', focus: 'FOCUS / LEFTLEG' },
-  { id: 'rightLeg', label: '右腿', focus: 'FOCUS / RIGHTLEG' },
-]
-
 const browser = await chromium.launch({
   executablePath:
     process.env.BHL_CHROME_PATH || 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
@@ -53,21 +45,22 @@ const makePage = async (viewport) => {
 }
 
 const waitForDigitalTwin = async (targetPage) => {
-  const lab = targetPage.locator('.digital-twin-lab')
-  await lab.waitFor({ state: 'attached', timeout: MODEL_TIMEOUT })
+  const lab = targetPage.locator('#digital-twin #model-studio')
+  await lab.waitFor({ state: 'visible', timeout: MODEL_TIMEOUT })
+  await targetPage.locator('#digital-twin .viewer canvas').waitFor({ state: 'visible', timeout: MODEL_TIMEOUT })
   await targetPage.waitForFunction(
-    () => document.querySelector('.digital-twin-lab')?.getAttribute('data-model-loaded') === 'true',
+    () => Number(document.querySelector('#digital-twin .viewer')?.dataset.modelHeight) > 0.5,
     undefined,
     { timeout: MODEL_TIMEOUT },
   )
-  await targetPage.locator('.twin-viewer canvas').waitFor({ state: 'visible', timeout: MODEL_TIMEOUT })
   await targetPage.waitForTimeout(400)
   return lab
 }
 
 const readModelReport = (targetPage) => targetPage.evaluate(() => {
-  const lab = document.querySelector('.digital-twin-lab')
-  const canvas = document.querySelector('.twin-viewer canvas')
+  const lab = document.querySelector('#digital-twin #model-studio')
+  const viewer = document.querySelector('#digital-twin .viewer')
+  const canvas = viewer?.querySelector('canvas')
   const canvasRect = canvas?.getBoundingClientRect()
   const resourcePaths = performance.getEntriesByType('resource').map((entry) => {
     try {
@@ -76,25 +69,25 @@ const readModelReport = (targetPage) => targetPage.evaluate(() => {
       return entry.name
     }
   })
-  const stlPaths = [...new Set(resourcePaths.filter((path) => path.endsWith('.stl')))]
-  const motionButtons = [...document.querySelectorAll('.motion-list button')]
+  const meshPaths = [...new Set(resourcePaths.filter((path) => path.includes('/meshes-gzip/') && path.endsWith('.stl.gz')))]
+  const motionButtons = [...document.querySelectorAll('#digital-twin .twin-motion-list button')]
 
   return {
-    loaded: lab?.getAttribute('data-model-loaded') === 'true',
-    errorVisible: Boolean(document.querySelector('.twin-error')),
-    canvasCount: document.querySelectorAll('.twin-viewer canvas').length,
+    loaded: Number(viewer?.dataset.modelHeight) > 0.5,
+    errorVisible: Boolean(lab?.querySelector('.twin-error')),
+    canvasCount: viewer?.querySelectorAll('canvas').length ?? 0,
     canvas: canvas ? {
       width: canvas.width,
       height: canvas.height,
       clientWidth: canvasRect?.width,
       clientHeight: canvasRect?.height,
-      accessibleName: canvas.getAttribute('aria-label'),
+      accessibleName: viewer?.getAttribute('aria-label'),
     } : null,
     urdfRequested: resourcePaths.some((path) => path.endsWith('/berkeley_humanoid_lite.urdf')),
-    uniqueStlRequestCount: stlPaths.length,
+    uniqueMeshRequestCount: meshPaths.length,
     motionButtonCount: motionButtons.length,
     motionButtonsEnabled: motionButtons.every((button) => !button.disabled),
-    caption: document.querySelector('.twin-stage__caption strong')?.textContent?.trim(),
+    caption: document.querySelector('#digital-twin .twin-model-caption strong')?.textContent?.trim(),
   }
 })
 
@@ -125,82 +118,53 @@ await page.locator('.site-footer').screenshot({ path: 'preview-footer.png' })
 await page.locator('.digital-twin-section').scrollIntoViewIfNeeded()
 await waitForDigitalTwin(page)
 const desktopModel = await readModelReport(page)
-await page.locator('.digital-twin-lab').screenshot({ path: 'preview-digital-twin.png' })
+await page.locator('#digital-twin #model-studio').screenshot({ path: 'preview-digital-twin.png' })
 
-const waveButton = page.getByRole('group', { name: '机器人动作选择' }).getByRole('button', { name: /招手/ })
+const waveButton = page.locator('#digital-twin .twin-motion-list').getByRole('button', { name: /招手/ })
 await waveButton.click()
 await page.waitForFunction(
-  () => document.querySelector('.twin-stage__head small')?.textContent?.includes('WAVE SEQUENCE'),
+  () => document.querySelector('#digital-twin .twin-motion-head strong')?.textContent?.includes('WAVE SEQUENCE'),
 )
 const motionState = {
-  sequence: await page.locator('.twin-stage__head small').textContent(),
-  activeButton: await page.locator('.motion-list button.is-active').textContent(),
+  sequence: await page.locator('#digital-twin .twin-motion-head strong').textContent(),
+  activeButton: await page.locator('#digital-twin .twin-motion-list button.is-active').textContent(),
 }
 
-const explodeButton = page.locator('.twin-control-deck__head > button')
+const explodeButton = page.locator('#digital-twin .twin-primary')
 await explodeButton.click()
 await page.waitForFunction(
-  () => document.querySelector('.twin-stage__head small')?.textContent?.includes('ASSEMBLY / EXPLODED'),
+  () => document.querySelector('#digital-twin #model-studio')?.classList.contains('is-exploded'),
 )
 const explodedState = {
-  status: await page.locator('.twin-stage__head small').textContent(),
-  caption: await page.locator('.twin-stage__caption strong').textContent(),
+  status: await page.locator('#digital-twin .twin-motion-head strong').textContent(),
+  caption: await page.locator('#digital-twin .twin-model-caption strong').textContent(),
   buttonText: await explodeButton.textContent(),
-  buttonActive: await explodeButton.evaluate((button) => button.classList.contains('is-active')),
+  exploded: await page.locator('#digital-twin #model-studio').evaluate((element) => element.classList.contains('is-exploded')),
 }
 
 await explodeButton.click()
 await page.waitForFunction(
-  () => document.querySelector('.twin-stage__head small')?.textContent?.includes('RESET SEQUENCE'),
+  () => !document.querySelector('#digital-twin #model-studio')?.classList.contains('is-exploded'),
 )
 const restoredState = {
-  status: await page.locator('.twin-stage__head small').textContent(),
-  caption: await page.locator('.twin-stage__caption strong').textContent(),
+  status: await page.locator('#digital-twin .twin-motion-head strong').textContent(),
+  caption: await page.locator('#digital-twin .twin-model-caption strong').textContent(),
   buttonText: await explodeButton.textContent(),
-  buttonActive: await explodeButton.evaluate((button) => button.classList.contains('is-active')),
+  exploded: await page.locator('#digital-twin #model-studio').evaluate((element) => element.classList.contains('is-exploded')),
 }
 
-const resetViewButton = page.getByRole('button', { name: '重置三维视角' })
+const resetViewButton = page.locator('#digital-twin').getByRole('button', { name: '重置视角' })
 const resetViewEnabled = await resetViewButton.isEnabled()
+const cameraDistanceBeforeReset = Number(await page.locator('#digital-twin .viewer').getAttribute('data-camera-distance'))
 await resetViewButton.click()
+await page.waitForTimeout(300)
 const resetViewState = {
   enabled: resetViewEnabled,
-  modelStillLoaded: await page.locator('.digital-twin-lab').getAttribute('data-model-loaded'),
-  canvasStillVisible: await page.locator('.twin-viewer canvas').isVisible(),
+  modelStillLoaded: Number(await page.locator('#digital-twin .viewer').getAttribute('data-model-height')) > 0.5,
+  cameraDistanceBeforeReset,
+  cameraDistanceAfterReset: Number(await page.locator('#digital-twin .viewer').getAttribute('data-camera-distance')),
+  canvasStillVisible: await page.locator('#digital-twin .viewer canvas').isVisible(),
 }
-
-const guideButtons = page.locator('.twin-guide__list > button')
-const guideButtonCount = await guideButtons.count()
-const guideStates = []
-for (let index = 0; index < GUIDE_EXPECTATIONS.length; index += 1) {
-  const expected = GUIDE_EXPECTATIONS[index]
-  const button = guideButtons.nth(index)
-  await button.click()
-  await page.waitForFunction(
-    ({ buttonIndex, label, focus }) => {
-      const buttons = [...document.querySelectorAll('.twin-guide__list > button')]
-      return buttons[buttonIndex]?.classList.contains('is-active')
-        && buttons[buttonIndex]?.getAttribute('aria-pressed') === 'true'
-        && document.querySelector('.twin-guide__detail strong')?.textContent?.includes(label)
-        && document.querySelector('.twin-guide__detail small')?.textContent?.includes(focus)
-    },
-    { buttonIndex: index, label: expected.label, focus: expected.focus },
-  )
-  guideStates.push(await page.evaluate((buttonIndex) => {
-    const buttons = [...document.querySelectorAll('.twin-guide__list > button')]
-    const buttonElement = buttons[buttonIndex]
-    return {
-      buttonText: buttonElement?.textContent?.replace(/\s+/g, ' ').trim(),
-      active: buttonElement?.classList.contains('is-active'),
-      ariaPressed: buttonElement?.getAttribute('aria-pressed'),
-      activeButtonCount: buttons.filter((item) => item.classList.contains('is-active')).length,
-      pressedButtonCount: buttons.filter((item) => item.getAttribute('aria-pressed') === 'true').length,
-      focus: document.querySelector('.twin-guide__detail small')?.textContent?.trim(),
-      title: document.querySelector('.twin-guide__detail strong')?.textContent?.trim(),
-    }
-  }, index))
-}
-await page.locator('.twin-guide').screenshot({ path: 'preview-structure-guide.png' })
 
 await page.locator('.anatomy-item').nth(2).click()
 const activeAnatomy = await page.locator('.anatomy-item.is-active h3').textContent()
@@ -331,7 +295,7 @@ const truthLabels = await page.evaluate(() => {
   }
   return {
     digitalTwin: read('.twin-truth-note'),
-    modelSource: read('.twin-source'),
+    modelBoundary: read('#digital-twin .twin-boundary'),
     iotArchitecture: read('.iot-architecture__truth'),
     smartService: read('.service-truth-bar'),
   }
@@ -378,62 +342,10 @@ const menuClosedAfterEscape = await mobile.locator('.site-nav').evaluate((elemen
 const focusReturnedToToggle = await mobile.locator('.menu-toggle').evaluate((element) => document.activeElement === element)
 
 await mobile.locator('.digital-twin-section').scrollIntoViewIfNeeded()
-await mobile.locator('.twin-gate').waitFor({ state: 'visible', timeout: 30_000 })
-await mobile.waitForFunction(
-  () => {
-    const poster = document.querySelector('.twin-gate img')
-    return poster?.complete && poster.naturalWidth > 0
-  },
-  undefined,
-  { timeout: 30_000 },
-)
-const mobileGateReport = await mobile.evaluate(() => {
-  const poster = document.querySelector('.twin-gate img')
-  const posterRect = poster?.getBoundingClientRect()
-  const modelResources = performance.getEntriesByType('resource')
-    .map((entry) => entry.name)
-    .filter((url) => /\/humanoid\/.*(?:\.urdf|\.stl)(?:$|[?#])/i.test(url))
-  return {
-    loadedBeforeActivation: document.querySelector('.digital-twin-lab')?.getAttribute('data-model-loaded'),
-    canvasCountBeforeActivation: document.querySelectorAll('.twin-viewer canvas').length,
-    modelRequestCountBeforeActivation: modelResources.length,
-    poster: poster ? {
-      complete: poster.complete,
-      naturalWidth: poster.naturalWidth,
-      naturalHeight: poster.naturalHeight,
-      width: posterRect?.width,
-      height: posterRect?.height,
-      alt: poster.alt,
-    } : null,
-    launchButtonVisible: Boolean(document.querySelector('.twin-gate button')?.getBoundingClientRect().width),
-    launchButtonText: document.querySelector('.twin-gate button')?.textContent?.replace(/\s+/g, ' ').trim(),
-  }
-})
-await mobile.locator('.digital-twin-lab').screenshot({ path: 'preview-mobile-3d-poster.png' })
-
-await mobile.getByRole('button', { name: /启动 3D 展示/ }).click()
 await waitForDigitalTwin(mobile)
 const mobileModel = await readModelReport(mobile)
-const mobileInteractionToggle = mobile.locator('.twin-interaction-toggle')
-const mobileInteractionInitial = {
-  visible: await mobileInteractionToggle.isVisible(),
-  pressed: await mobileInteractionToggle.getAttribute('aria-pressed'),
-  text: await mobileInteractionToggle.textContent(),
-  canvasTouchAction: await mobile.locator('.twin-viewer canvas').evaluate((canvas) => canvas.style.touchAction),
-}
-await mobile.locator('.digital-twin-lab').screenshot({ path: 'preview-mobile-3d.png' })
-await mobileInteractionToggle.click()
-const mobileInteractionActive = {
-  pressed: await mobileInteractionToggle.getAttribute('aria-pressed'),
-  text: await mobileInteractionToggle.textContent(),
-  canvasTouchAction: await mobile.locator('.twin-viewer canvas').evaluate((canvas) => canvas.style.touchAction),
-}
-await mobileInteractionToggle.click()
-const mobileInteractionExited = {
-  pressed: await mobileInteractionToggle.getAttribute('aria-pressed'),
-  text: await mobileInteractionToggle.textContent(),
-  canvasTouchAction: await mobile.locator('.twin-viewer canvas').evaluate((canvas) => canvas.style.touchAction),
-}
+const mobileTouchAction = await mobile.locator('#digital-twin .viewer canvas').evaluate((canvas) => canvas.style.touchAction)
+await mobile.locator('#digital-twin #model-studio').screenshot({ path: 'preview-mobile-3d.png' })
 
 const mobileReport = await mobile.evaluate(() => ({
   bodyHeight: document.body.scrollHeight,
@@ -463,37 +375,30 @@ const assertions = {
   desktopModelLoads: desktopModel.loaded === true
     && desktopModel.errorVisible === false
     && desktopModel.urdfRequested === true
-    && desktopModel.uniqueStlRequestCount === 26
-    && desktopModel.caption === '22-JOINT MODEL LOADED',
+    && desktopModel.uniqueMeshRequestCount === 26
+    && desktopModel.caption === '22-DOF MOTION',
   desktopCanvasRenders: desktopModel.canvasCount === 1
     && desktopModel.canvas?.width > 0
     && desktopModel.canvas?.height > 0
     && desktopModel.canvas?.clientWidth > 0
     && desktopModel.canvas?.clientHeight > 0
-    && desktopModel.canvas?.accessibleName?.includes('Berkeley Humanoid Lite'),
-  motionButtonsReady: desktopModel.motionButtonCount === 5 && desktopModel.motionButtonsEnabled === true,
+    && desktopModel.canvas?.accessibleName?.includes('3S 人形服务机器人'),
+  motionButtonsReady: desktopModel.motionButtonCount === 6 && desktopModel.motionButtonsEnabled === true,
   motionButtonInteractionWorks: motionState.sequence?.includes('WAVE SEQUENCE')
     && motionState.activeButton?.includes('招手'),
-  explodedViewWorks: explodedState.status?.includes('ASSEMBLY / EXPLODED')
-    && explodedState.caption?.includes('EXPLODED ASSEMBLY')
+  explodedViewWorks: explodedState.status?.includes('ASSEMBLY EXPLODED')
+    && explodedState.caption?.includes('EXPLODED VIEW')
     && explodedState.buttonText?.includes('重新组装')
-    && explodedState.buttonActive === true,
-  explodedViewRestores: restoredState.status?.includes('RESET SEQUENCE')
-    && restoredState.caption?.includes('22-JOINT MODEL LOADED')
-    && restoredState.buttonText?.includes('展开结构')
-    && restoredState.buttonActive === false,
+    && explodedState.exploded === true,
+  explodedViewRestores: restoredState.status?.includes('WAVE SEQUENCE')
+    && restoredState.caption?.includes('22-DOF MOTION')
+    && restoredState.buttonText?.includes('探索结构')
+    && restoredState.exploded === false,
   resetViewWorks: resetViewState.enabled === true
-    && resetViewState.modelStillLoaded === 'true'
+    && resetViewState.modelStillLoaded === true
+    && resetViewState.cameraDistanceBeforeReset > 0
+    && resetViewState.cameraDistanceAfterReset > 0
     && resetViewState.canvasStillVisible === true,
-  structureGuideHasFiveModules: guideButtonCount === GUIDE_EXPECTATIONS.length,
-  structureGuideHighlightsEachModule: guideStates.length === GUIDE_EXPECTATIONS.length
-    && guideStates.every((state, index) => state.active === true
-      && state.ariaPressed === 'true'
-      && state.activeButtonCount === 1
-      && state.pressedButtonCount === 1
-      && state.buttonText?.includes(GUIDE_EXPECTATIONS[index].label)
-      && state.focus === GUIDE_EXPECTATIONS[index].focus
-      && state.title === GUIDE_EXPECTATIONS[index].label),
   iotArchitectureHasFiveLayers: iotTabCount === IOT_LAYER_EXPECTATIONS.length,
   iotArchitectureSwitchesAllLayers: iotLayerStates.length === IOT_LAYER_EXPECTATIONS.length
     && iotLayerStates.every((state, index) => state.ariaSelected === 'true'
@@ -522,10 +427,9 @@ const assertions = {
     && truthLabels.digitalTwin.text?.includes('OFFLINE DIGITAL MODEL')
     && truthLabels.digitalTwin.text?.includes('当前未接入实机遥测或控制')
     && truthLabels.digitalTwin.text?.includes('NOT LIVE DATA')
-    && truthLabels.modelSource.visible === true
-    && truthLabels.modelSource.text?.includes('NOT LIVE TELEMETRY')
-    && truthLabels.modelSource.text?.includes('OFFICIAL ASSETS')
-    && truthLabels.modelSource.text?.includes('CC BY-SA 4.0')
+    && truthLabels.modelBoundary.visible === true
+    && truthLabels.modelBoundary.text?.includes('程序化姿态与结构拆解演示')
+    && truthLabels.modelBoundary.text?.includes('非实机遥测或物理性能验证')
     && truthLabels.iotArchitecture.visible === true
     && truthLabels.iotArchitecture.text?.includes('不连接真实机器人')
     && truthLabels.iotArchitecture.text?.includes('不生成虚假遥测')
@@ -540,35 +444,17 @@ const assertions = {
     && showcaseRemoved.manualEntryPresent === true,
   desktopHasNoHorizontalOverflow: Math.max(desktopReport.bodyWidth, desktopReport.documentWidth) <= desktopReport.viewportWidth,
   mobileHasNoHorizontalOverflow: Math.max(mobileReport.bodyWidth, mobileReport.documentWidth) <= mobileReport.viewportWidth,
-  mobileUsesDeferredModelPoster: mobileGateReport.loadedBeforeActivation === 'false'
-    && mobileGateReport.canvasCountBeforeActivation === 0
-    && mobileGateReport.modelRequestCountBeforeActivation === 0
-    && mobileGateReport.poster?.complete === true
-    && mobileGateReport.poster?.naturalWidth > 0
-    && mobileGateReport.poster?.width > 0
-    && mobileGateReport.poster?.height > 0
-    && mobileGateReport.launchButtonVisible === true
-    && mobileGateReport.launchButtonText?.includes('启动 3D 展示'),
-  mobileModelLoadsAfterActivation: mobileModel.loaded === true
+  mobileUsesUnifiedViewer: mobileModel.loaded === true
     && mobileModel.errorVisible === false
     && mobileModel.urdfRequested === true
-    && mobileModel.uniqueStlRequestCount === 26
-    && mobileModel.caption === '22-JOINT MODEL LOADED',
-  mobileCanvasRendersAfterActivation: mobileModel.canvasCount === 1
+    && mobileModel.uniqueMeshRequestCount === 26
+    && mobileModel.motionButtonCount === 6,
+  mobileCanvasRenders: mobileModel.canvasCount === 1
     && mobileModel.canvas?.width > 0
     && mobileModel.canvas?.height > 0
     && mobileModel.canvas?.clientWidth > 0
     && mobileModel.canvas?.clientHeight > 0,
-  mobileInteractionCanExit: mobileInteractionInitial.visible === true
-    && mobileInteractionInitial.pressed === 'false'
-    && mobileInteractionInitial.text?.includes('启用 3D 交互')
-    && mobileInteractionInitial.canvasTouchAction === 'pan-y'
-    && mobileInteractionActive.pressed === 'true'
-    && mobileInteractionActive.text?.includes('退出 3D 交互')
-    && mobileInteractionActive.canvasTouchAction === 'none'
-    && mobileInteractionExited.pressed === 'false'
-    && mobileInteractionExited.text?.includes('启用 3D 交互')
-    && mobileInteractionExited.canvasTouchAction === 'pan-y',
+  mobileTouchKeepsPageScrollable: mobileTouchAction === 'pan-y',
   allMetricsRenderOnMobile: mobileReport.visibleMetricCount === 4,
   closedMenuItemsAreHidden: closedMenuItemVisible === false,
   mobileMenuOpens: mobileMenuOpen === true,
@@ -590,15 +476,11 @@ console.log(JSON.stringify({
     explodedState,
     restoredState,
     resetViewState,
-    guideButtonCount,
-    guideStates,
     iotTabCount,
     iotLayerStates,
     truthLabels,
     showcaseRemoved,
-    mobileInteractionInitial,
-    mobileInteractionActive,
-    mobileInteractionExited,
+    mobileTouchAction,
     closedMenuItemVisible,
     mobileMenuOpen,
     menuFocusedItem,
@@ -606,7 +488,6 @@ console.log(JSON.stringify({
     focusReturnedToToggle,
   },
   desktopModel,
-  mobileGate: mobileGateReport,
   mobileModel,
   desktop: desktopReport,
   mobile: mobileReport,

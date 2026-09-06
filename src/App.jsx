@@ -25,34 +25,9 @@ import {
   X,
   Zap,
 } from 'lucide-react'
+import ModelStudio from './ModelStudio.jsx'
 
-const HumanoidLab = React.lazy(() => import('./HumanoidLab.jsx'))
 const assetUrl = (path) => `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`
-
-class TwinErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = { failed: false }
-  }
-
-  static getDerivedStateFromError() {
-    return { failed: true }
-  }
-
-  render() {
-    if (this.state.failed) {
-      return (
-        <div className="twin-chunk-placeholder twin-chunk-placeholder--error" role="alert">
-          <ScanLine size={24} />
-          <strong>3D ENGINE UNAVAILABLE</strong>
-          <small>模型引擎加载失败，请刷新页面重试；其他内容仍可正常浏览。</small>
-        </div>
-      )
-    }
-
-    return this.props.children
-  }
-}
 
 const LINKS = {
   site: 'https://lite.berkeley-humanoid.org/',
@@ -1104,60 +1079,6 @@ function SmartServiceConsole({ showcaseMode = false }) {
   )
 }
 
-function LazyHumanoidLab({ showcaseMode = false, forceMount = false }) {
-  const hostRef = useRef(null)
-  const [shouldMount, setShouldMount] = useState(false)
-
-  useEffect(() => {
-    if (forceMount) {
-      setShouldMount(true)
-      return undefined
-    }
-    const host = hostRef.current
-    if (!host) return undefined
-    if (!('IntersectionObserver' in window)) {
-      setShouldMount(true)
-      return undefined
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      if (!entries[0]?.isIntersecting) return
-      setShouldMount(true)
-      observer.disconnect()
-    }, {
-      rootMargin: window.matchMedia('(max-width: 900px), (pointer: coarse)').matches
-        ? '120px 0px'
-        : '700px 0px',
-    })
-    observer.observe(host)
-    return () => observer.disconnect()
-  }, [forceMount])
-
-  return (
-    <div className="twin-lazy-host" ref={hostRef}>
-      {shouldMount ? (
-        <TwinErrorBoundary>
-          <React.Suspense fallback={(
-            <div className="twin-chunk-placeholder" role="status">
-              <span />
-              <strong>INITIALIZING 3D ENGINE</strong>
-              <small>THREE.JS / URDF PIPELINE</small>
-            </div>
-          )}>
-            <HumanoidLab showcaseMode={showcaseMode} />
-          </React.Suspense>
-        </TwinErrorBoundary>
-      ) : (
-        <div className="twin-chunk-placeholder" aria-hidden="true">
-          <span />
-          <strong>DIGITAL TWIN STANDBY</strong>
-          <small>SCROLL TO INITIALIZE</small>
-        </div>
-      )}
-    </div>
-  )
-}
-
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('robot')
@@ -1402,7 +1323,7 @@ function App() {
               <i />
               <div><small>RUNTIME</small><strong>THREE.JS</strong><span>本地渲染 / 程序化动作</span></div>
             </div>
-            <LazyHumanoidLab />
+            <ModelStudio />
           </div>
         </section>
 
