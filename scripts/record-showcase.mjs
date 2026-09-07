@@ -162,12 +162,15 @@ try {
   await cue({ chapter: '05 / SERVICE ARCHIVE', title: '复检通过，任务恢复并完成归档', subtitle: '采样、告警、处置与复检形成可导出的事件链', truth: '完整服务闭环 / JSON 可导出', progress: 77, fullscreen: false })
   await wait(1600)
 
-  // 70–83 / Engineering evidence and selected self-owned footage
-  await cue({ chapter: '06 / ENGINEERING EVIDENCE', title: '从数字模型回到真实工程对象', subtitle: '八组装配照片与三段项目自有实机影像', truth: '项目实物记录 / 非性能结论', progress: 80, fullscreen: false })
+  // 70–75 / Engineering stills
+  await cue({ chapter: '06 / ENGINEERING EVIDENCE', title: '从数字模型回到真实工程对象', subtitle: '装配与联调照片构成可核验的研制过程记录', truth: '项目实物照片 / 非性能结论', progress: 80, fullscreen: false })
   await scroll('#evidence', 'start'); await wait(1100)
   const photo = page.locator('.evidence-card').nth(4)
   await click(photo); await wait(1800); await page.keyboard.press('Escape'); await wait(600)
-  await scroll('.motion-evidence');
+  // 75–85 / Standalone physical robot footage
+  await cue({ chapter: '07 / PHYSICAL ROBOT', title: '实物运动验证', subtitle: '三段项目自有现场影像，独立呈现实机动作与调试过程', truth: '项目自有影像 / 非实时遥测', progress: 84, fullscreen: true })
+  await wait(900)
+  await scroll('#motion-evidence');
   const clips = [[0, 20], [1, 12], [2, 18]]
   for (const [index, start] of clips) {
     const record = page.locator('.motion-record').nth(index)
@@ -177,13 +180,13 @@ try {
       videoElement.currentTime = time
       await videoElement.play()
     }, start)
-    await cue({ chapter: `06 / OWN PROJECT FOOTAGE 0${index + 1}`, title: ['整机现场动作记录', '项目调试过程记录', '实体机器人工作片段'][index], subtitle: '实机影像只用于说明已有工程对象与动态过程', truth: '项目自有影像 / 非实时遥测', progress: 84 + index * 4, fullscreen: false })
+    await cue({ chapter: `07 / PHYSICAL TEST 0${index + 1}`, title: ['整机动作验证', '运动调试记录', '实体机器人工作片段'][index], subtitle: ['观察整机运动过程与机构协同', '记录调试阶段的动作表现', '呈现实物平台已有动态工作过程'][index], truth: '项目自有影像 / 非实时遥测 / 非性能结论', progress: 86 + index * 3, fullscreen: false })
     await wait(2500)
     await record.locator('video').evaluate(videoElement => videoElement.pause())
   }
 
-  // 83–90 / Outro
-  await scroll('#outcomes'); await cue({ chapter: '07 / APPLICATION VALUE', title: '状态可知 · 服务可追溯', subtitle: '面向实验室巡检、教学实训与机器人研发运维', truth: '软件演示 → 实机适配 → 小规模试点', progress: 94, fullscreen: false }); await wait(2300)
+  // 85–90 / Outro
+  await scroll('#outcomes'); await cue({ chapter: '08 / APPLICATION VALUE', title: '状态可知 · 服务可追溯', subtitle: '面向实验室巡检、教学实训与机器人研发运维', truth: '软件演示 → 实机适配 → 小规模试点', progress: 96, fullscreen: false }); await wait(1800)
   await cue({ chapter: '3S / HUMANOID SMART SERVICE', title: '人形机器人智慧运维与任务服务系统', subtitle: '物联网技术创新 · 可运行软件演示', truth: 'END / 2026', progress: 100, fullscreen: true, outro: true })
   await wait(4700)
 
