@@ -23,6 +23,7 @@ const overflow = async () => assert.ok(await page.evaluate(() => document.docume
 try {
   const response = await page.goto(base, { waitUntil: 'networkidle' })
   assert.equal(response.status(), 200)
+  assert.equal(await page.locator('.recording-overlay').count(), 0)
   await page.screenshot({ path: 'preview-3s-desktop.png', fullPage: true })
   await page.screenshot({ path: 'preview-3s-hero.png' })
   await overflow()
@@ -108,6 +109,11 @@ try {
   assert.ok(legacyTargetBox && legacyTargetBox.y >= 0 && legacyTargetBox.y <= 120)
   assert.equal(await page.getByText('进入技术展厅', { exact: true }).count(), 0)
   passed.push('legacy technical exhibition URL redirects to the main digital model')
+  await page.goto(`${base}?recording=1`, { waitUntil: 'networkidle' })
+  await page.waitForFunction(() => window.__RECORDING_OVERLAY_READY__ === true)
+  assert.equal(await page.locator('.recording-overlay.is-fullscreen').count(), 1)
+  assert.equal(await page.locator('#service-console').getAttribute('data-phase'), 'idle')
+  passed.push('recording skin is opt-in and does not auto-run the public demo')
   assert.deepEqual(errors, [])
   console.log(JSON.stringify({ base, passed, errors }, null, 2))
 } finally {

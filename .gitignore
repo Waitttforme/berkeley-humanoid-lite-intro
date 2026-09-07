@@ -11,6 +11,8 @@ github-pages-check*.png
 r3-*.png
 official-cover.png
 qa_*/
+video-output/
+recording-temp/
 *.docx
 *.pdf
 *.tar.gz

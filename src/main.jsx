@@ -1,5 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
+import RecordingOverlay from './RecordingOverlay.jsx'
 
 const pageUrl = new URL(window.location.href)
 const legacyTechnical = pageUrl.searchParams.get('view') === 'technical'
@@ -10,9 +11,10 @@ if (legacyTechnical) {
 }
 const App = React.lazy(() => import('./CompetitionApp.jsx'))
 const rootElement = document.getElementById('root')
+const recording = pageUrl.searchParams.get('recording') === '1'
 
 ReactDOM.createRoot(rootElement).render(
-  <React.Suspense fallback={<p style={{ padding: 40 }}>正在加载展厅…</p>}><App /></React.Suspense>,
+  <>{recording && <RecordingOverlay/>}<React.Suspense fallback={<p style={{ padding: 40 }}>正在加载展厅…</p>}><App /></React.Suspense></>,
 )
 
 if (legacyTechnical) {
