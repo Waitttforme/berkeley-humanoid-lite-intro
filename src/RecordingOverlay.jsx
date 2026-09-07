@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import './recording.css'
+import './cinematic-effects.css'
 
 const initialCue = {
   chapter: '3S / COMPETITION FILM',
@@ -32,13 +33,15 @@ export default function RecordingOverlay() {
     }
   }, [])
 
-  return <div className={`recording-overlay${cue.fullscreen ? ' is-fullscreen' : ''}${cue.outro ? ' is-outro' : ''}`} aria-hidden="true">
-    <div className="recording-vignette"/><div className="recording-scan"/>
+  return <div className={`recording-overlay${cue.fullscreen ? ' is-fullscreen' : ''}${cue.outro ? ' is-outro' : ''}${cue.effect ? ` effect-${cue.effect}` : ''}`} aria-hidden="true">
+    <div className="recording-grid"/><div className="recording-energy"><i/><i/><i/></div>
+    <div className="recording-flare"/><div className="recording-vignette"/><div className="recording-scan"/>
     <div className="recording-corners"><i/><i/><i/><i/></div>
     <div className="recording-caption" key={`${cue.chapter}-${cue.title}`}><span>{cue.chapter}</span><strong>{cue.title}</strong><p>{cue.subtitle}</p></div>
     <div className="recording-truth"><i/>{cue.truth}</div>
     <div className="recording-timecode">3S / FILM <b>{String(Math.round(cue.progress || 0)).padStart(2, '0')}</b></div>
     <div className="recording-progress"><span style={{ width: `${Math.max(0, Math.min(100, cue.progress || 0))}%` }}/></div>
+    <div className="recording-film-bars"><i/><i/></div>
     {pulse && (
       <i className="recording-click-pulse" key={pulse.id} style={{ left: pulse.x, top: pulse.y }}/>
     )}

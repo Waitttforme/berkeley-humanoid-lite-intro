@@ -97,7 +97,7 @@ try {
   const waitForPhase = phase => page.waitForFunction(value => document.querySelector('#service-console')?.dataset.phase === value, phase)
 
   // 00–08 / Opening
-  await cue({ chapter: '3S / INTERNET OF THINGS', title: '人形机器人智慧运维与任务服务系统', subtitle: '从机器会动，走向状态可知、服务可追溯', truth: '可运行软件演示 / 物联网技术创新', progress: 0, fullscreen: true, outro: false })
+  await cue({ chapter: '3S / INTERNET OF THINGS', title: '人形机器人智慧运维与任务服务系统', subtitle: '从机器会动，走向状态可知、服务可追溯', truth: '可运行软件演示 / 物联网技术创新', progress: 0, fullscreen: true, outro: false, effect: 'boot' })
   await wait(3500)
   await cue({ chapter: '01 / PROJECT VISION', title: '机器会动，链路更应可见', subtitle: '端 → 边 → 服务 · 三类异常 · 六步服务闭环', truth: 'HUMANOID SMART SERVICE SYSTEM', progress: 4, fullscreen: false })
   await scroll('#overview', 'start'); await wait(3600)
@@ -107,7 +107,7 @@ try {
   await scroll('.problems'); await wait(6100)
 
   // 15–34 / Digital model
-  await cue({ chapter: '03 / DIGITAL MODEL', title: '让整机结构真正可见', subtitle: '22 自由度 · 26 个结构网格 · 6 种程序化姿态', truth: '程序化姿态演示 / 非实机遥测', progress: 17, fullscreen: false })
+  await cue({ chapter: '03 / DIGITAL MODEL', title: '让整机结构真正可见', subtitle: '22 自由度 · 26 个结构网格 · 6 种程序化姿态', truth: '程序化姿态演示 / 非实机遥测', progress: 17, fullscreen: false, effect: 'model' })
   await scroll('#model-studio'); await wait(1700)
   const motionButtons = page.locator('#model-studio .twin-motion-list button')
   await click(motionButtons.nth(1)); await wait(3000)
@@ -127,7 +127,7 @@ try {
   await click(explode); await wait(3600); await click(explode); await wait(1300)
 
   // 34–47 / Architecture
-  await cue({ chapter: '04 / SYSTEM ARCHITECTURE', title: '端、边、服务协同', subtitle: '感知与执行、通信汇聚、边缘处理和智慧服务逐层衔接', truth: '架构说明 / 非实时链路', progress: 38, fullscreen: false })
+  await cue({ chapter: '04 / SYSTEM ARCHITECTURE', title: '端、边、服务协同', subtitle: '感知与执行、通信汇聚、边缘处理和智慧服务逐层衔接', truth: '架构说明 / 非实时链路', progress: 38, fullscreen: false, effect: 'data' })
   await scroll('#solution'); await wait(1100)
   const layerButtons = page.locator('.architecture button')
   for (const [index, title, subtitle, progress] of [
@@ -148,7 +148,7 @@ try {
   await click(primary()); await waitForPhase('running'); await wait(1500)
   await cue({ chapter: '05 / SENSING', title: '状态采样正在运行', subtitle: '温度、电流、CAN 丢包率与机身倾角进入统一状态快照', truth: '1 秒 / 样本 · 演示规则 v1', progress: 57, fullscreen: false })
   await click(primary()); await waitForPhase('alert'); await wait(2200)
-  await cue({ chapter: '05 / DIAGNOSIS', title: '关节温升触发可解释规则', subtitle: '局部琥珀提示定位右膝，诊断同时保留其他指标对照', truth: '演示阈值 / 未经实机标定', progress: 61, fullscreen: false })
+  await cue({ chapter: '05 / DIAGNOSIS', title: '关节温升触发可解释规则', subtitle: '局部琥珀提示定位右膝，诊断同时保留其他指标对照', truth: '演示阈值 / 未经实机标定', progress: 61, fullscreen: false, effect: 'alert' })
   await click(primary()); await waitForPhase('adjusted'); await wait(1200)
   await click(primary()); await waitForPhase('ticketed'); await wait(1600)
   await cue({ chapter: '05 / MAINTENANCE ORDER', title: '异常与维护动作保持同一上下文', subtitle: '任务暂停后生成工单，三项检查完成后才允许复检', truth: '本地处置记录 / 不发送外部工单', progress: 67, fullscreen: false })
@@ -159,7 +159,7 @@ try {
   await page.locator('.recheck-select select').selectOption('recovered')
   await click(primary()); await waitForPhase('verified'); await wait(1300)
   await click(primary()); await waitForPhase('closed'); await wait(1300)
-  await cue({ chapter: '05 / SERVICE ARCHIVE', title: '复检通过，任务恢复并完成归档', subtitle: '采样、告警、处置与复检形成可导出的事件链', truth: '完整服务闭环 / JSON 可导出', progress: 77, fullscreen: false })
+  await cue({ chapter: '05 / SERVICE ARCHIVE', title: '复检通过，任务恢复并完成归档', subtitle: '采样、告警、处置与复检形成可导出的事件链', truth: '完整服务闭环 / JSON 可导出', progress: 77, fullscreen: false, effect: 'success' })
   await wait(1600)
 
   // 70–75 / Engineering stills
@@ -168,12 +168,14 @@ try {
   const photo = page.locator('.evidence-card').nth(4)
   await click(photo); await wait(1800); await page.keyboard.press('Escape'); await wait(600)
   // 75–85 / Standalone physical robot footage
-  await cue({ chapter: '07 / PHYSICAL ROBOT', title: '实物运动验证', subtitle: '三段项目自有现场影像，独立呈现实机动作与调试过程', truth: '项目自有影像 / 非实时遥测', progress: 84, fullscreen: true })
+  await cue({ chapter: '07 / PHYSICAL ROBOT', title: '实物运动验证', subtitle: '三段项目自有现场影像，独立呈现实机动作与调试过程', truth: '项目自有影像 / 非实时遥测', progress: 84, fullscreen: true, effect: 'physical' })
   await wait(900)
   await scroll('#motion-evidence');
   const clips = [[0, 20], [1, 12], [2, 18]]
+  await page.locator('.motion-section').evaluate(element => element.classList.add('is-film-focus'))
   for (const [index, start] of clips) {
     const record = page.locator('.motion-record').nth(index)
+    await page.locator('.motion-record').evaluateAll((records, activeIndex) => records.forEach((item, itemIndex) => item.classList.toggle('is-film-active', itemIndex === activeIndex)), index)
     await scroll(`.motion-record:nth-of-type(${index + 1})`)
     await record.locator('video').evaluate(async (videoElement, time) => {
       videoElement.muted = true
@@ -184,10 +186,12 @@ try {
     await wait(2500)
     await record.locator('video').evaluate(videoElement => videoElement.pause())
   }
+  await page.locator('.motion-section').evaluate(element => element.classList.remove('is-film-focus'))
+  await page.locator('.motion-record').evaluateAll(records => records.forEach(item => item.classList.remove('is-film-active')))
 
   // 85–90 / Outro
   await scroll('#outcomes'); await cue({ chapter: '08 / APPLICATION VALUE', title: '状态可知 · 服务可追溯', subtitle: '面向实验室巡检、教学实训与机器人研发运维', truth: '软件演示 → 实机适配 → 小规模试点', progress: 96, fullscreen: false }); await wait(1800)
-  await cue({ chapter: '3S / HUMANOID SMART SERVICE', title: '人形机器人智慧运维与任务服务系统', subtitle: '物联网技术创新 · 可运行软件演示', truth: 'END / 2026', progress: 100, fullscreen: true, outro: true })
+  await cue({ chapter: '3S / HUMANOID SMART SERVICE', title: '人形机器人智慧运维与任务服务系统', subtitle: '物联网技术创新 · 可运行软件演示', truth: 'END / 2026', progress: 100, fullscreen: true, outro: true, effect: 'outro' })
   await wait(4700)
 
   const contentEndedAt = Date.now()
