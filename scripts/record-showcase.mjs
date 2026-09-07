@@ -103,10 +103,11 @@ try {
   await scroll('#overview', 'start'); await wait(3600)
 
   // 08–109 / Full-length self-owned physical robot footage
-  await cue({ chapter: '02 / PHYSICAL ROBOT', title: '实物运动验证', subtitle: '三段项目自有现场影像，全部从第一帧完整播放', truth: '项目自有影像 / 非实时遥测', progress: 6, fullscreen: true, effect: 'physical' })
+  await cue({ chapter: '02 / PHYSICAL ROBOT', title: '实物运动验证', subtitle: '四段项目自有现场影像，全部从第一帧完整播放', truth: '项目自有影像 / 非实时遥测', progress: 6, fullscreen: true, effect: 'physical' })
   await wait(1200)
   await scroll('#motion-evidence')
   const footage = [
+    ['实机快速亮相', '新增短片快速建立实体机器人印象'],
     ['整机动作验证', '观察整机运动过程与机构协同'],
     ['运动调试记录', '记录调试阶段的动作表现'],
     ['实体机器人工作片段', '呈现实物平台已有动态工作过程'],
@@ -116,7 +117,7 @@ try {
     const record = page.locator('.motion-record').nth(index)
     await page.locator('.motion-record').evaluateAll((records, activeIndex) => records.forEach((item, itemIndex) => item.classList.toggle('is-film-active', itemIndex === activeIndex)), index)
     await scroll(`.motion-record:nth-of-type(${index + 1})`)
-    await cue({ chapter: `02 / FULL FOOTAGE 0${index + 1}`, title, subtitle: `${subtitle} · 完整保留原始时长`, truth: '项目自有影像 / 完整播放 / 非性能结论', progress: 8 + index * 18, fullscreen: false, effect: 'physical' })
+    await cue({ chapter: `02 / FULL FOOTAGE 0${index + 1}`, title, subtitle: `${subtitle} · 完整保留原始时长`, truth: '项目自有影像 / 完整播放 / 非性能结论', progress: 8 + index * 14, fullscreen: false, effect: 'physical' })
     await record.locator('video').evaluate((videoElement, fast) => new Promise((resolve, reject) => {
       const timeout = window.setTimeout(() => reject(new Error('Physical footage playback timed out')), fast ? 5000 : 60000)
       const finish = () => { window.clearTimeout(timeout); videoElement.removeEventListener('ended', finish); resolve() }
@@ -249,7 +250,7 @@ try {
       '交互数字样机展示二十二自由度、二十六个结构网格和六种程序化姿态。',
       '以关节温升为例，系统完成状态采样、规则诊断、任务暂停、维护工单、复检和服务归档。',
       '全部服务数据由浏览器本地模拟，不连接实机，也不发送控制指令。',
-      '八组实物照片与三段项目自有影像，记录从部件到整机的工程过程。',
+      '八组实物照片与四段项目自有影像，记录从部件到整机的工程过程。',
       '面向实验室巡检、教学实训与机器人研发运维，让状态可知，让服务可追溯。',
     ].join('\r\n'), 'utf8')
     console.log(`\nCreated: ${silentPath}\nSize: ${(outputStats.size / 1024 / 1024).toFixed(1)} MiB`)

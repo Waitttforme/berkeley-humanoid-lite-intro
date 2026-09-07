@@ -4,9 +4,12 @@ import { scenarios, metrics, normal, diagnose, initialState, serviceReducer } fr
 import './competition.css'
 import './premium.css'
 import './effects.css'
+import './motion-showcase.css'
 import useExhibitionMotion from './useExhibitionMotion.js'
 import ModelStudio from './ModelStudio.jsx'
 import { SystemOverview, LayerDeepDive, InnovationStudy, ReportTechnicalSupplement } from './EngineeringDetails.jsx'
+import motion00 from './assets/motion/robot-motion-00.mp4'
+import motion00Poster from './assets/motion/robot-motion-00-poster.webp'
 import motion01 from './assets/motion/robot-motion-01.mp4'
 import motion01Poster from './assets/motion/robot-motion-01-poster.webp'
 import motion02 from './assets/motion/robot-motion-02.mp4'
@@ -38,9 +41,10 @@ const evidence = [
   ['physical-mapping', '08 / 整机展开', '沿结构认识部件关系', '整机展开状态呈现机身、肢体与线束之间的空间关系，可与数字样机的部件定位对照。'],
 ]
 const motionRecords = [
-  [motion01, motion01Poster, '01', '实机动态记录一', '00:42', '整机现场动作影像，用于呈现已有实体机器人的动态状态。'],
-  [motion02, motion02Poster, '02', '实机动态记录二', '00:35', '项目调试过程影像，用于补充静态装配照片之外的工程记录。'],
-  [motion03, motion03Poster, '03', '实机动态记录三', '00:24', '实体机器人动作片段，用于展示本项目已有实物工作过程。'],
+  [motion00, motion00Poster, '01', '实机快速亮相', '00:04', '新增现场短片，以紧凑镜头快速建立实体机器人印象。'],
+  [motion01, motion01Poster, '02', '整机动作验证', '00:42', '整机现场动作影像，用于呈现已有实体机器人的动态状态。'],
+  [motion02, motion02Poster, '03', '运动调试记录', '00:35', '项目调试过程影像，用于补充静态装配照片之外的工程记录。'],
+  [motion03, motion03Poster, '04', '实体工作片段', '00:24', '实体机器人动作片段，用于展示本项目已有实物工作过程。'],
 ]
 function Heading({ index, label, title, text }) { return <div className="section-heading"><div><span className="eyebrow">{index} / {label}</span><h2>{title}</h2></div><p>{text}</p></div> }
 function saveFile(name, body) { const url = URL.createObjectURL(new Blob([body], { type: 'application/json;charset=utf-8' })); const a = document.createElement('a'); a.href = url; a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000) }
@@ -123,7 +127,7 @@ function MotionEvidence() {
     try { await videos.current[index]?.play() } catch { /* Native controls remain available. */ }
   }
   return <div className="motion-evidence" ref={container} aria-labelledby="motion-evidence-title">
-    <div className="motion-evidence__head"><div><span className="eyebrow">PHYSICAL ROBOT / MOTION EVIDENCE</span><h3 id="motion-evidence-title">实机动态记录</h3></div><p>三段均为本项目自有现场影像，完整保留原始时长。点击后按需加载，一次只播放一段。</p></div>
+    <div className="motion-evidence__head"><div><span className="eyebrow">PHYSICAL ROBOT / MOTION EVIDENCE</span><h3 id="motion-evidence-title">实机动态记录</h3></div><p>四段均为本项目自有现场影像，完整保留原始时长。点击后按需加载，一次只播放一段。</p></div>
     <div className="motion-records">{motionRecords.map(([file, poster, index, title, duration, description], position) => <article className={`motion-record${playing === position ? ' is-playing' : ''}`} key={file}>
       <div className="motion-record__media"><video ref={node => { videos.current[position] = node }} controls preload="none" playsInline poster={poster} onPlay={() => { videos.current.forEach((video, other) => { if (other !== position) video?.pause() }); setPlaying(position) }} onPause={() => setPlaying(current => current === position ? null : current)} onEnded={() => setPlaying(null)} aria-label={`${title}，${duration}`}><source src={file} type="video/mp4"/></video>{playing !== position && <button className="motion-record__play" onClick={() => play(position)} aria-label={`播放${title}`}><Play size={19} fill="currentColor"/><span>播放现场记录</span></button>}<span className="motion-record__duration">{duration}</span></div>
       <div className="motion-record__copy"><span>{index} / OWN PROJECT FOOTAGE</span><h4>{title}</h4><p>{description}</p></div>
@@ -168,7 +172,7 @@ export default function CompetitionApp() {
     <main><section className="hero" id="overview"><div className="hero-topline"><span><i/> 物联网技术创新 · 3S 智慧服务</span><span>INTERACTIVE EXHIBITION / 2026</span></div><div className="hero-layout"><div className="hero-copy"><span className="eyebrow">BEYOND MOTION. INTO SERVICE.</span><h1 aria-label="人形机器人 智慧服务"><span className="headline-line" style={{ '--line-index': 0 }}>人形机器人</span><span className="headline-line" style={{ '--line-index': 1 }}><em>智慧服务</em></span></h1><p>人形机器人智慧运维与任务服务系统</p><div className="hero-description">连接关节状态、异常诊断与维护流程。<br/>从机器会动，走向状态可知、服务可追溯。</div><div className="hero-actions"><a className="button primary" href="#demo"><Play size={16}/>开始交互演示<ArrowUpRight size={16}/></a><a className="button ghost" href="#model-studio">查看数字样机<ArrowRight size={16}/></a></div><div className="hero-note"><span className="live-dot"/>可运行软件演示<span>/</span>无需连接机器人</div></div><div className="hero-visual"><span className="hero-backword">HUMANOID</span><div className="hero-orbit orbit-one"/><div className="hero-orbit orbit-two"/><img className="hero-robot" src={asset('media/bhl-robot-cutout.png')} alt="Berkeley Humanoid Lite 人形机器人" fetchPriority="high" width="660" height="880"/><div className="visual-label label-top"><span className="crosshair">+</span><div><small>01 / SENSING</small><strong>感知每一个关节</strong></div></div><div className="visual-label label-bottom"><span className="crosshair">+</span><div><small>02 / SMART SERVICE</small><strong>连接每一次处置</strong></div></div><div className="visual-foot"><span>BERKELEY HUMANOID LITE</span><span>机器人平台 / 结构示意</span></div></div></div><div className="hero-bottom"><div><strong>端 → 边 → 服务</strong><span>物联网系统化设计</span></div><div><strong>3 种异常场景</strong><span>温升 / 通信 / 姿态</span></div><div><strong>6 步服务闭环</strong><span>从状态感知到服务归档</span></div><a href="#solution">向下探索<span>↓</span></a></div></section>
     <section className="section problems"><div className="problem-intro"><span className="eyebrow">THE CHALLENGE</span><h2>从设备运行<br/>到服务管理</h2><p>面向实验室巡检，关注设备运行背后的三个具体问题。</p></div><div className="problem-list">{[['01', '状态分散，难以判断', '关节、总线与机身状态缺少统一视图。', '多状态统一呈现'], ['02', '告警之后，处置脱节', '发现异常后，任务与维护动作仍需人工衔接。', '异常关联任务与工单'], ['03', '维护结束，缺少复检', '处理结果缺少统一确认与可追溯记录。', '复检通过后归档']].map(([n, title, text, result]) => <div key={n}><span>{n}</span><div><h3>{title}</h3><p>{text}</p></div><small><ArrowRight size={14}/>{result}</small></div>)}</div></section>
     <ModelStudio/>
-    <section className="section motion-section" id="motion-evidence"><MotionEvidence/><details className="source-details"><summary>影像真实性说明</summary><p>本节三段影像均由项目组提供并完整保留原始时长，用于记录实体机器人运动与调试过程；影像不代表网页正在接收实时遥测，也不作为负载、续航或控制精度的测试结论。</p></details></section>
+    <section className="section motion-section" id="motion-evidence"><MotionEvidence/><details className="source-details"><summary>影像真实性说明</summary><p>本节四段影像均由项目组提供并完整保留原始时长，用于记录实体机器人运动与调试过程；其中一份重复视频已自动去重。影像不代表网页正在接收实时遥测，也不作为负载、续航或控制精度的测试结论。</p></details></section>
     <section className="section" id="solution"><Heading index="01" label="SYSTEM ARCHITECTURE" title="端到边的系统协同" text="以设备状态为共同语言，把感知、控制、通信和边缘处理组织成可理解的系统。"/><SystemOverview/><div className="engineering-workbench"><div className="workbench-heading"><div><span className="workbench-dot" aria-hidden="true"/><strong>系统分层详解</strong></div><span>架构说明 · 非实时链路</span></div><div className="architecture" role="group" aria-label="技术方案分层导航">{layers.map((l, i) => <button key={l.en} className={i === layer ? 'active' : ''} aria-pressed={i === layer} onClick={() => setLayer(i)}><span>0{i + 1}<l.icon size={23}/></span><strong>{l.name}</strong><small>{l.en}</small>{i < 4 && <ChevronRight className="layer-arrow" size={18}/>}</button>)}</div><div className="architecture-detail" key={current.en}><div><span className="pill">{current.status}</span><h3>{current.name}</h3><p>{current.detail}</p></div><dl><div><dt>INPUT / 输入</dt><dd>{current.input}</dd></div><div><dt>OUTPUT / 输出</dt><dd>{current.output}</dd></div></dl></div><LayerDeepDive index={layer}/></div><div className="boundary-note"><CircleAlert size={17}/><p>当前服务端点使用浏览器模拟数据。本体 → 浏览器的遥测适配尚未接入；IMU 通过独立 USB 支路汇入机载计算，不经过关节控制器。</p></div></section>
     <section className="section demo-section" id="demo"><Heading index="02" label="LIVE SERVICE DEMO" title="让异常处理形成闭环" text="亲手操作一次巡检：发现问题、暂停任务、完成维护，再用复检确认服务结果。"/><ServiceDemo/></section>
     <section className="section" id="innovation"><Heading index="03" label="INNOVATION BY DESIGN" title="连接状态与服务的关键设计" text="从本体技术到智慧服务，分别说明问题、机制、价值与验证方法。点击条目展开细节。"/><InnovationStudy/></section>

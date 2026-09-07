@@ -23,18 +23,18 @@ try {
   await page.goto(base, { waitUntil: 'networkidle' })
   const section = page.locator('.motion-evidence')
   await section.scrollIntoViewIfNeeded()
-  assert.equal(await section.locator('video').count(), 3)
-  assert.equal(await section.locator('video[preload="none"]').count(), 3)
-  assert.equal(await section.locator('.motion-record__play').count(), 3)
+  assert.equal(await section.locator('video').count(), 4)
+  assert.equal(await section.locator('video[preload="none"]').count(), 4)
+  assert.equal(await section.locator('.motion-record__play').count(), 4)
   await section.screenshot({ path: 'preview-motion-evidence-desktop.png' })
   assert.equal(await page.evaluate(() => performance.getEntriesByType('resource').filter(entry => /robot-motion-\d{2}.*\.mp4/.test(entry.name)).length), 0)
   for (const video of await section.locator('video').all()) {
     assert.match(await video.getAttribute('poster'), /robot-motion-\d{2}-poster(?:-[\w-]+)?\.webp$/)
     assert.match(await video.locator('source').getAttribute('src'), /robot-motion-\d{2}(?:-[\w-]+)?\.mp4$/)
   }
-  await page.getByRole('button', { name: '播放实机动态记录一' }).click()
+  await page.getByRole('button', { name: '播放实机快速亮相' }).click()
   await page.waitForFunction(() => !document.querySelector('.motion-record video')?.paused)
-  await page.getByRole('button', { name: '播放实机动态记录二' }).click()
+  await page.getByRole('button', { name: '播放整机动作验证' }).click()
   await page.waitForFunction(() => {
     const videos = [...document.querySelectorAll('.motion-record video')]
     return videos[0].paused && !videos[1].paused
@@ -46,7 +46,7 @@ try {
   await page.setViewportSize({ width: 390, height: 900 })
   await section.screenshot({ path: 'preview-motion-evidence-mobile.png' })
   assert.deepEqual(errors, [])
-  console.log('PASS motion evidence: three self-owned videos, poster-first loading, exclusive playback, and responsive layout')
+  console.log('PASS motion evidence: four self-owned videos, poster-first loading, exclusive playback, and responsive layout')
 } finally {
   await browser.close()
   if (server) await server.close()

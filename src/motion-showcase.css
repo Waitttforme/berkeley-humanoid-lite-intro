@@ -1,0 +1,63 @@
+/* Four-up desktop presentation for the early physical-footage chapter. */
+.competition main {
+  display: flex;
+  flex-direction: column;
+}
+
+.competition main > * { order: 4; }
+.competition main > .hero { order: 0; }
+.competition main > .motion-section { order: 1; width: 100%; min-width: 0; }
+.competition main > .problems { order: 2; }
+.competition main > #model-studio { order: 3; width: 100%; }
+
+.motion-section .motion-records {
+  grid-template-columns: repeat(4, minmax(0, 280px));
+  gap: 24px;
+}
+
+.motion-section .motion-evidence__head > p {
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.motion-section .motion-record:first-child {
+  border-color: #a9e7ff42;
+  background: linear-gradient(155deg, #233845, #10171b);
+}
+
+.motion-section .motion-record:first-child .motion-record__copy > span {
+  color: #a6deef;
+}
+
+.motion-section .source-details {
+  box-sizing: border-box;
+  inline-size: min(1036px, 100%) !important;
+  max-inline-size: 100% !important;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+
+.motion-section .source-details p {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.motion-section .source-details:not([open]) > p {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .motion-section .motion-records {
+    grid-template-columns: repeat(2, minmax(0, 330px));
+  }
+}
+
+@media (max-width: 650px) {
+  .motion-section .motion-records {
+    display: flex;
+  }
+}
